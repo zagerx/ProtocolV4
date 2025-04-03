@@ -3,17 +3,13 @@
 订阅CAN总线上的节点心跳包（uavcan.node.Heartbeat）
 需要先运行 compile_dsdl.py 生成DSDL定义
 """
-
-import sys
-import pathlib
-sys.path.insert(0, str(pathlib.Path(".pyFolder").resolve()))
 import pycyphal
+
 from pycyphal.application import make_node, NodeInfo
 from pycyphal.transport.can import CANTransport
 from pycyphal.transport.can.media.socketcan import SocketCANMedia
 from uavcan.node import Heartbeat_1_0, Version_1_0
 from dinosaurs.actuator.wheel_motor import OdometryAndVelocityPublish_1_0
-# 确保DSDL生成路径正确
 import asyncio
 
 async def sub_heart_process() -> None:
@@ -58,6 +54,3 @@ async def sub_heart_process() -> None:
 
 if __name__ == "__main__":
     asyncio.run(sub_heart_process())
-
-
-

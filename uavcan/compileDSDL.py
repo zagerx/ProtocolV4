@@ -32,3 +32,32 @@ def compile_dsdl() -> None:
 
 if __name__ == "__main__":
     compile_dsdl()
+.myvenv) zhangge@sr:~/worknote/ProtocolV4/uavcan$ tree -L 3 -a
+.
+├── MotorAsst
+│   ├── release
+│   │   ├── hardware
+│   │   ├── lib
+│   │   ├── src
+│   │   └── ui
+│   └── test
+│       ├── designer_test.py
+│       ├── main.ui
+│       ├── __pycache__
+│       └── ui_main.py
+├── .myvenv
+├── .pyFolder
+│   ├── dinosaurs
+│   │   ├── __init__.py
+│   │   ├── TimeSync_1_0.py
+│   │   └── WorkMode_1_0.py
+│   ├── nunavut_support.py
+│   ├── reg
+│   │   ├── __init__.py
+│   │   └── udral
+│   └── uavcan
+│       ├── diagnostic
+│       ├── file
+│       ├── __init__.py
+│       └── time
+├── setup.py
