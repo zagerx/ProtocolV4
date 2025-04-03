@@ -1,3 +1,4 @@
 # python
 uavcan/.*/
-uavcan/*.csv/
+uavcan/*.csv
+uavcan/*.png
