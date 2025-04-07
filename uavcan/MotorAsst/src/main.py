@@ -1,38 +1,48 @@
-# src/mcAsst.py
+# import sys
+# sys.path.append('/home/zhangge/worknote/ProtocolV4/uavcan/MotorAsst/lib')
+# import asyncio
+
+# from sub_heart import HeartbeatMonitor
+
+# async def check_heartbeat():
+#     async with HeartbeatMonitor(can_interface="can1", local_node_id=28) as monitor:
+#         result = await monitor.monitor_heartbeat(timeout=2.0)
+#         if result:
+#             print("检测到心跳包")
+#         else:
+#             print("未检测到心跳包")
+
+# if __name__ == "__main__":
+#     asyncio.run(check_heartbeat())
+
 import sys
 import os
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtCore import QObject, pyqtSignal
 
-# 添加项目根目录到 Python 路径
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from lib.window.ui_main import Ui_MainWindow
-from src.rThread import HeartbeatMonitorThread
+# 路径设置
+ui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ui")
+sys.path.append(os.path.normpath(ui_dir))
+# sys.path.append('/home/zhangge/worknote/ProtocolV4/uavcan/MotorAsst/src')
 
-class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
-        self.pushButton.clicked.connect(self.on_button_click)
-        self.heartbeat_thread = None
 
-    def on_button_click(self):
-        print("按钮被点击！")
-        if not self.heartbeat_thread or not self.heartbeat_thread.is_alive():
-            self.start_heartbeat_monitor()
+from PyQt6.QtWidgets import QApplication
+from rthread import BaseCanThread
+from window_main import MainWindow
 
-    def start_heartbeat_monitor(self):
-        self.heartbeat_thread = HeartbeatMonitorThread()
-        self.heartbeat_thread.start()
-        print("心跳监听线程已启动")
-
-    def closeEvent(self, event):
-        if self.heartbeat_thread:
-            self.heartbeat_thread.stop()
-        event.accept()
-
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     window = MainWindow()
+    
+    # 初始化CAN线程
+    can_thread = BaseCanThread()
+    can_thread.register_handler("heartbeat", window.handle_heartbeat)
+    can_thread.start()
+
     window.show()
-    app.exec()
+    ret = app.exec()
+    
+    # 清理
+    can_thread.stop()
+    sys.exit(ret)
+
+if __name__ == "__main__":
+    main()

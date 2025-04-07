@@ -10,46 +10,86 @@ from pycyphal.transport.can import CANTransport
 from pycyphal.transport.can.media.socketcan import SocketCANMedia
 from uavcan.node import Heartbeat_1_0, Version_1_0
 
-async def sub_heart_process():
-    # 初始化 CAN 接口和传输层
-    media = SocketCANMedia("can1", mtu=8)
-    transport = CANTransport(media, local_node_id=28)
-    
-    # 创建节点（显式启动）
-    node = make_node(
-        transport=transport,
-        info=NodeInfo(
-            name="test_node",
-            software_version=Version_1_0(major=1, minor=0),
-            unique_id=bytes.fromhex("DEADBEEFCAFEBABE12345678ABCDEF01")
-        )
-    )
-    node.start()  # 必须显式启动
-    
-    # 创建订阅者
-    sub = node.make_subscriber(Heartbeat_1_0, 7509)
-    print("正在监听 CAN 总线上的心跳包...")
+class HeartbeatMonitor:
+    def __init__(self, can_interface="can1", local_node_id=28):
+        self.can_interface = can_interface
+        self.local_node_id = local_node_id
+        self.media = None
+        self.transport = None
+        self.node = None
+        self.sub = None
 
-    try:
-        # 计算超时时间（当前时间 + 1.0 秒）
-        deadline = asyncio.get_event_loop().time() + 2.0
+    async def initialize(self):
+        # 初始化 CAN 接口和传输层
+        self.media = SocketCANMedia(self.can_interface, mtu=8)
+        self.transport = CANTransport(self.media, local_node_id=self.local_node_id)
         
-        # 接收消息（带超时）
+        # 创建节点（显式启动）
+        self.node = make_node(
+            transport=self.transport,
+            info=NodeInfo(
+                name="test_node",
+                software_version=Version_1_0(major=1, minor=0),
+                unique_id=bytes.fromhex("DEADBEEFCAFEBABE12345678ABCDEF01")
+            )
+        )
+        self.node.start()  # 必须显式启动
+        
+        # 创建订阅者
+        self.sub = self.node.make_subscriber(Heartbeat_1_0, 7509)
+        print(f"正在监听 {self.can_interface} 上的心跳包...")
+
+    async def monitor_heartbeat(self, timeout=2.0):
+        if self.sub is None:
+            print("错误: 订阅者未初始化")
+            return
+
         try:
-            result = await asyncio.wait_for(sub.receive(monotonic_deadline=deadline), timeout=2.0)
+            # 计算超时时间（当前时间 + timeout 秒）
+            deadline = asyncio.get_event_loop().time() + timeout
+            
+            # 接收消息（带超时）
+            result = await asyncio.wait_for(self.sub.receive(monotonic_deadline=deadline), timeout=timeout)
             if result is not None:
                 msg, transfer = result
                 print(f"\n心跳包来自节点 {transfer.source_node_id}:")
                 print(f"- 运行状态: {msg.mode}")
                 print(f"- 健康状况: {msg.health}")
                 print(f"- Uptime: {msg.uptime} 秒")
+                return True
+            else:
+                print("错误: 未接收到心跳包")
+                return False
         except asyncio.TimeoutError:
-            print("错误: 未接收到心跳包")
-    finally:
+            print(f"错误: {timeout} 秒内未接收到心跳包")
+            return False
+        except Exception as e:
+            print(f"错误: {e}")
+            return False
+
+    async def close(self):
         # 显式关闭所有资源（关键！）
-        sub.close()  # 先关闭订阅者
-        node.close()  # 同步关闭节点
-        transport.close()
-        media.close()
-if __name__ == "__main__":
-    asyncio.run(sub_heart_process())
+        if self.sub:
+            self.sub.close()
+        if self.node:
+            self.node.close()
+        if self.transport:
+            self.transport.close()
+        if self.media:
+            self.media.close()
+        print("所有资源已关闭")
+
+    async def __aenter__(self):
+        await self.initialize()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.close()
+
+# # 示例用法
+# async def main():
+#     async with HeartbeatMonitor(can_interface="can1", local_node_id=28) as monitor:
+#         await monitor.monitor_heartbeat(timeout=1.0)
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
