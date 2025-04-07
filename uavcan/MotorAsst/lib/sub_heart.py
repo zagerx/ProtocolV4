@@ -40,32 +40,21 @@ class HeartbeatMonitor:
         print(f"正在监听 {self.can_interface} 上的心跳包...")
 
     async def monitor_heartbeat(self, timeout=2.0):
-        if self.sub is None:
-            print("错误: 订阅者未初始化")
-            return
-
         try:
-            # 计算超时时间（当前时间 + timeout 秒）
             deadline = asyncio.get_event_loop().time() + timeout
-            
-            # 接收消息（带超时）
-            result = await asyncio.wait_for(self.sub.receive(monotonic_deadline=deadline), timeout=timeout)
-            if result is not None:
-                msg, transfer = result
-                print(f"\n心跳包来自节点 {transfer.source_node_id}:")
-                print(f"- 运行状态: {msg.mode}")
-                print(f"- 健康状况: {msg.health}")
-                print(f"- Uptime: {msg.uptime} 秒")
-                return True
-            else:
-                print("错误: 未接收到心跳包")
-                return False
+            result = await asyncio.wait_for(
+                self.sub.receive(monotonic_deadline=deadline),  # 添加必要参数
+                timeout=timeout
+            )
+            if result:
+                return True, result  # 返回元组 (success, data)
+            return False, None
         except asyncio.TimeoutError:
-            print(f"错误: {timeout} 秒内未接收到心跳包")
-            return False
+            return False, None
         except Exception as e:
-            print(f"错误: {e}")
-            return False
+            print(f"接收错误: {e}")
+            return False, None
+
 
     async def close(self):
         # 显式关闭所有资源（关键！）

@@ -1,16 +1,8 @@
 import asyncio
 import sys
 sys.path.append('/home/zhangge/worknote/ProtocolV4/uavcan/MotorAsst/lib')
-
-
 from PyQt6.QtCore import QThread, pyqtSignal
-
-
 from sub_heart import HeartbeatMonitor
-# import asyncio
-# from PyQt6.QtCore import QThread, pyqtSignal
-# from lib.sub_heart import HeartbeatMonitor
-
 class BaseCanThread(QThread):
     """CAN总线基础线程类"""
     message_received = pyqtSignal(str, object)  # (msg_type, data)
@@ -36,24 +28,27 @@ class BaseCanThread(QThread):
             self._handlers[msg_type](data)
 
     async def _monitor_heartbeat(self):
-        """心跳包监控任务"""
+        """最终版心跳监控任务"""
         try:
             while self._running:
-                result = await self.heartbeat_monitor.monitor_heartbeat(timeout=1.0)
-                if result:
-                    msg, transfer = result
-                    self.message_received.emit(
-                        "heartbeat",
-                        {
-                            "node_id": transfer.source_node_id,
-                            "mode": str(msg.mode),
-                            "health": str(msg.health),
-                            "uptime": msg.uptime
-                        }
-                    )
+                success, result = await self.heartbeat_monitor.monitor_heartbeat(timeout=1.0)
+                if not success:
+                    continue
+                    
+                msg, transfer = result  # 直接解包
+                self.message_received.emit(
+                    "heartbeat",
+                    {
+                        "node_id": transfer.source_node_id,
+                        "mode": str(msg.mode),
+                        "health": str(msg.health),
+                        "uptime": msg.uptime
+                    }
+                )
         except asyncio.CancelledError:
             print("心跳监控任务已取消")
-
+        except Exception as e:
+            print(f"心跳监控错误: {type(e).__name__}: {e}")
     async def _run_tasks(self):
         """运行所有监控任务"""
         self.heartbeat_monitor = HeartbeatMonitor(
