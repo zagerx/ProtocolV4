@@ -2,12 +2,12 @@ import sys
 import os
 
 # 路径设置
-ui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ui")
-sys.path.append(os.path.normpath(ui_dir))
+# ui_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "ui")
+# sys.path.append(os.path.normpath(ui_dir))
 
 from PyQt6.QtWidgets import QApplication
 from rthread import BaseCanThread
-from window_main import MainWindow
+from MotorAsst.ui.window_main import MainWindow
 
 def main():
     app = QApplication(sys.argv)

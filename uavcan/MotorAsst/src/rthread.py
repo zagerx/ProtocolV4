@@ -1,8 +1,6 @@
 import asyncio
-import sys
-sys.path.append('/home/zhangge/worknote/ProtocolV4/uavcan/MotorAsst/lib')
 from PyQt6.QtCore import QThread, pyqtSignal
-from sub_heart import HeartbeatMonitor
+from MotorAsst.lib.sub_heart import HeartbeatMonitor
 class BaseCanThread(QThread):
     """CAN总线基础线程类"""
     message_received = pyqtSignal(str, object)  # (msg_type, data)

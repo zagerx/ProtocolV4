@@ -3,3 +3,4 @@ uavcan/.*/
 uavcan/*.csv
 uavcan/*.png
 uavcan/**/__pycache__/
+uavcan/motorasst.egg-info

@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QLabel
-from ui_main import Ui_MainWindow
+from MotorAsst.ui.ui_main import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
