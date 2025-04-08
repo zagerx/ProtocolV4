@@ -1,53 +1,64 @@
 #!/usr/bin/env python3
 """
-主窗口界面，负责:
-1. 显示CAN总线设备状态
-2. 处理用户交互
-3. 展示心跳和里程计数据
+主窗口界面 - 完整手动创建控件版本
 """
-from PyQt6.QtWidgets import (QMainWindow, QLabel, QMessageBox, 
-                            QVBoxLayout, QHBoxLayout, QGroupBox, QWidget)
+from PyQt6.QtWidgets import (
+    QMainWindow, QLabel, QMessageBox, 
+    QVBoxLayout, QHBoxLayout, QGroupBox, QWidget
+)
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
 from MotorAsst.ui.ui_main import Ui_MainWindow
-from MotorAsst.src.rthread import BaseCanThread
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, can_interface="can1"):
+    def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.can_interface = can_interface
-        
-        # 手动创建UI控件
-        self._create_missing_widgets()
-        
-        # 初始化UI状态
-        self._init_ui()
-        
-        # 创建CAN监控线程
-        self.can_thread = BaseCanThread(can_interface=self.can_interface)
-        self.can_thread.message_received.connect(self._handle_can_message)
-        self.can_thread.register_handler("heartbeat", self.handle_heartbeat)
-        self.can_thread.register_handler("odometry", self.handle_odometry)
-        
-        # 连接信号槽
-        self.pushButton.clicked.connect(self.on_button_click)
+        self._create_missing_controls()
+        self._setup_ui()
 
-    def _create_missing_widgets(self):
-        """手动创建缺失的UI控件"""
-        # 创建容器
-        self.odom_group = QGroupBox("里程计数据", self)
-        self.vel_group = QGroupBox("速度数据", self)
-        self.status_group = QGroupBox("状态信息", self)
+    def _create_missing_controls(self):
+        """手动创建缺失的控件"""
+        # 主容器
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        self.main_layout = QVBoxLayout(self.central_widget)
         
-        # 创建标签
-        self.left_odom_label = QLabel("0.000 m", self)
-        self.right_odom_label = QLabel("0.000 m", self)
-        self.left_vel_label = QLabel("0.000 m/s", self)
-        self.right_vel_label = QLabel("0.000 m/s", self)
-        self.uptime_label = QLabel("0.0 s", self)
-        self.timestamp_label = QLabel("0 ms", self)
+        # 1. 里程计数据组
+        self.odom_group = QGroupBox("里程计数据")
+        odom_layout = QHBoxLayout()
         
+        self.left_odom_label = QLabel("0.000 m")
+        self.right_odom_label = QLabel("0.000 m")
+        
+        odom_layout.addWidget(QLabel("左轮里程:"))
+        odom_layout.addWidget(self.left_odom_label)
+        odom_layout.addSpacing(20)
+        odom_layout.addWidget(QLabel("右轮里程:"))
+        odom_layout.addWidget(self.right_odom_label)
+        self.odom_group.setLayout(odom_layout)
+        
+        # 2. 速度数据组
+        self.vel_group = QGroupBox("速度数据")
+        vel_layout = QHBoxLayout()
+        
+        self.left_vel_label = QLabel("0.000 m/s")
+        self.right_vel_label = QLabel("0.000 m/s")
+        
+        vel_layout.addWidget(QLabel("左轮速度:"))
+        vel_layout.addWidget(self.left_vel_label)
+        vel_layout.addSpacing(20)
+        vel_layout.addWidget(QLabel("右轮速度:"))
+        vel_layout.addWidget(self.right_vel_label)
+        self.vel_group.setLayout(vel_layout)
+        
+        # 添加到主布局
+        self.main_layout.addWidget(self.odom_group)
+        self.main_layout.addWidget(self.vel_group)
+        self.main_layout.addStretch()
+
+    def _setup_ui(self):
+        """初始化UI设置"""
         # 设置字体
         font = QFont()
         font.setPointSize(10)
@@ -56,126 +67,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                      self.left_vel_label, self.right_vel_label]:
             label.setFont(font)
         
-        # 布局里程计组
-        odom_layout = QHBoxLayout()
-        odom_layout.addWidget(QLabel("左轮里程:"))
-        odom_layout.addWidget(self.left_odom_label)
-        odom_layout.addSpacing(20)
-        odom_layout.addWidget(QLabel("右轮里程:"))
-        odom_layout.addWidget(self.right_odom_label)
-        self.odom_group.setLayout(odom_layout)
-        
-        # 布局速度组
-        vel_layout = QHBoxLayout()
-        vel_layout.addWidget(QLabel("左轮速度:"))
-        vel_layout.addWidget(self.left_vel_label)
-        vel_layout.addSpacing(20)
-        vel_layout.addWidget(QLabel("右轮速度:"))
-        vel_layout.addWidget(self.right_vel_label)
-        self.vel_group.setLayout(vel_layout)
-        
-        # 布局状态组
-        status_layout = QVBoxLayout()
-        status_layout.addWidget(QLabel("运行时间:"))
-        status_layout.addWidget(self.uptime_label)
-        status_layout.addWidget(QLabel("最后更新时间:"))
-        status_layout.addWidget(self.timestamp_label)
-        self.status_group.setLayout(status_layout)
-        
-        # 主布局
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.odom_group)
-        main_layout.addWidget(self.vel_group)
-        main_layout.addWidget(self.status_group)
-        main_layout.addStretch()
-        
-        # 设置中心部件
-        central_widget = QWidget()
-        central_widget.setLayout(main_layout)
-        self.setCentralWidget(central_widget)
-
-    def _init_ui(self):
-        """初始化UI元素"""
         # 状态栏标签
-        self.status_label = QLabel("状态: 初始化CAN总线...", self)
+        self.status_label = QLabel("状态: 等待连接...")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.statusbar.addPermanentWidget(self.status_label)
 
-        # 里程计数据显示初始化
-        self.left_odom_label.setText("0.000 m")
-        self.right_odom_label.setText("0.000 m")
-        self.left_vel_label.setText("0.000 m/s")
-        self.right_vel_label.setText("0.000 m/s")
-
-    def showEvent(self, event):
-        """窗口显示时启动CAN线程"""
-        super().showEvent(event)
-        self.can_thread.start()
-
-    def closeEvent(self, event):
-        """窗口关闭时安全停止线程"""
-        self.can_thread.stop()
-        super().closeEvent(event)
-
-    @pyqtSlot(str, object)
-    def _handle_can_message(self, msg_type, data):
-        """分发CAN消息到对应处理器"""
-        if msg_type == "heartbeat":
-            self.handle_heartbeat(data)
-        elif msg_type == "odometry":
-            self.handle_odometry(data)
-
-    def handle_heartbeat(self, data):
-        """处理心跳数据并更新UI"""
+    @pyqtSlot(dict)
+    def handle_heartbeat(self, data: dict):
+        """处理心跳数据"""
+        mode_map = {0: "运行", 1: "初始化", 2: "维护", 3: "升级"}
+        health_map = {0: "正常", 1: "注意", 2: "警告", 3: "故障"}
+        
         status_text = (
             f"节点 {data['node_id']} | "
-            f"模式: {self._parse_mode(data['mode'])} | "
-            f"健康: {self._parse_health(data['health'])}"
+            f"模式: {mode_map.get(data['mode'], '未知')} | "
+            f"健康: {health_map.get(data['health'], '未知')}"
         )
         self.status_label.setText(status_text)
-        
-        # 更新运行时间显示
-        uptime_sec = data['uptime'] / 1e6  # 转换为秒
-        self.uptime_label.setText(f"{uptime_sec:.1f} s")
 
-    def handle_odometry(self, data):
-        """处理里程计数据并更新UI"""
-        # 更新数值显示
+    @pyqtSlot(dict)
+    def handle_odometry(self, data: dict):
+        """处理里程计数据"""
         self.left_odom_label.setText(f"{data['left_odometry']:.3f} m")
         self.right_odom_label.setText(f"{data['right_odometry']:.3f} m")
         self.left_vel_label.setText(f"{data['left_velocity']:.3f} m/s")
         self.right_vel_label.setText(f"{data['right_velocity']:.3f} m/s")
-        
-        # 更新时间戳
-        self.timestamp_label.setText(f"{data['timestamp']} ms")
+        self.status_label.setText("数据更新正常")
 
-    def on_button_click(self):
-        """按钮点击事件处理"""
-        QMessageBox.information(self, "控制指令", "控制指令已发送")
+    @pyqtSlot(str)
+    def handle_error(self, message: str):
+        """处理错误信息"""
+        QMessageBox.critical(self, "错误", message)
+        self.status_label.setText(f"错误: {message[:30]}...")
 
-    def show_about(self):
-        """显示关于对话框"""
-        QMessageBox.about(self, "关于", 
-            "CAN总线监控工具\n"
-            "版本: 1.0\n"
-            f"接口: {self.can_interface}")
-
-    def _parse_mode(self, mode_str):
-        """解析模式枚举值"""
-        mode_map = {
-            "value=0": "运行",
-            "value=1": "初始化",
-            "value=2": "维护",
-            "value=3": "软件更新"
-        }
-        return mode_map.get(mode_str.split("(")[-1].rstrip(")"), mode_str)
-
-    def _parse_health(self, health_str):
-        """解析健康状态枚举值"""
-        health_map = {
-            "value=0": "正常",
-            "value=1": "注意",
-            "value=2": "警告",
-            "value=3": "严重"
-        }
-        return health_map.get(health_str.split("(")[-1].rstrip(")"), health_str)
+    def closeEvent(self, event):
+        """窗口关闭事件"""
+        if hasattr(self, 'can_thread'):
+            self.can_thread.stop()
+        event.accept()
