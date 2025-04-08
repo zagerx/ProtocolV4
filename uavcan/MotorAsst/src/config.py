@@ -1,14 +1,31 @@
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import List
+from enum import Enum
+
+class MonitorType(Enum):
+    HEARTBEAT = "heartbeat"
+    ODOMETRY = "odometry"
+
+@dataclass
+class MonitorConfig:
+    type: MonitorType
+    port: int
+    enabled: bool = True
 
 @dataclass
 class CanConfig:
     interface: str = "can1"
     node_id: int = 28
-    heartbeat_port: int = 7509
-    odometry_port: int = 1100
     mtu: int = 8
     timeout: float = 2.0
+    monitors: List[MonitorConfig] = None
+
+    def __post_init__(self):
+        if self.monitors is None:
+            self.monitors = [
+                MonitorConfig(MonitorType.HEARTBEAT, 7509),
+                MonitorConfig(MonitorType.ODOMETRY, 1100)
+            ]
 
 @dataclass
 class UIConfig:
