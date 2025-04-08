@@ -23,11 +23,9 @@ class OdomMonitor:
         self.start_time = time.monotonic()
         self.prev_odometry = None  # 存储前一时刻的里程计数据
 
-    async def initialize(self):
+    async def initialize_with_transport(self, transport):
         # 初始化 CAN 接口和传输层
-        self.media = SocketCANMedia(self.can_interface, mtu=8)
-        self.transport = CANTransport(self.media, local_node_id=self.local_node_id)
-        
+        self.transport = transport
         # 创建节点（显式启动）
         self.node = make_node(
             transport=self.transport,
@@ -56,19 +54,6 @@ class OdomMonitor:
         print(f"\n[ODOM] Time: {ts}ms")
         print(f"Left - Velocity: {l_vel:.3f} m/s | Odom: {l_odom:.3f} m")
         print(f"Right - Velocity: {r_vel:.3f} m/s | Odom: {r_odom:.3f} m")
-
-        # 增量检测逻辑
-        if self.prev_odometry is not None:
-            delta_l = l_odom - self.prev_odometry["l_odom"]
-            delta_r = r_odom - self.prev_odometry["r_odom"]
-            
-            threshold = 0.05
-            if abs(delta_l) > threshold or abs(delta_r) > threshold:
-                print(f"WARNING: Large delta detected!")
-                print(f"Left delta: {delta_l:.3f} m")
-                print(f"Right delta: {delta_r:.3f} m")
-
-        self.prev_odometry = {"l_odom": l_odom, "r_odom": r_odom}
         return {
             "timestamp": ts,
             "left_velocity": l_vel,

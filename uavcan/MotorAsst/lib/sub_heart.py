@@ -19,11 +19,9 @@ class HeartbeatMonitor:
         self.node = None
         self.sub = None
 
-    async def initialize(self):
+    async def initialize_with_transport(self, transport):
         # 初始化 CAN 接口和传输层
-        self.media = SocketCANMedia(self.can_interface, mtu=8)
-        self.transport = CANTransport(self.media, local_node_id=self.local_node_id)
-        
+        self.transport = transport
         # 创建节点（显式启动）
         self.node = make_node(
             transport=self.transport,
