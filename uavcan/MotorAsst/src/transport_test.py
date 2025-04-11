@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 import asyncio
 import logging
-from logging.handlers import RotatingFileHandler
+from MotorAsst.core.monitorthread import MonitorThread
+from MotorAsst.config import ConfigManager
 from pycyphal.transport.can import CANTransport
 from pycyphal.transport.can.media.socketcan import SocketCANMedia
 from MotorAsst.drivers.can.transport import CANNodeService
-from MotorAsst.drivers.can.monitors.heartbeat import HeartbeatMonitor
-from MotorAsst.drivers.can.monitors.odometry import OdometryMonitor
-
-
-
-from MotorAsst.config import ConfigManager
+from logging.handlers import RotatingFileHandler
 
 def setup_logging(config):
     """根据配置初始化日志系统"""
@@ -38,69 +34,31 @@ def setup_logging(config):
         ))
         logger.addHandler(console_handler)
 
-async def run_monitor(monitor, name: str):
-    """监控任务运行器"""
-    try:
-        while True:
-            success, data = await monitor.monitor(1.0)
-            if success:
-                logging.getLogger(name).info(_format_data(name, data))
-    except asyncio.CancelledError:
-        pass
-
-def _format_data(name: str, data: dict) -> str:
-    """数据格式化"""
-    if name == "Odometry":
-        return (
-            f"TS={data['timestamp']:.3f}ms | "
-            f"Left: v={data['left_velocity']:.3f}m/s o={data['left_odometry']:.3f}m | "
-            f"Right: v={data['right_velocity']:.3f}m/s o={data['right_odometry']:.3f}m"
-        )
-    return str(data)
-
 async def main():
     config = ConfigManager()
     setup_logging(config.app)
     
+    # 初始化CAN总线
     transport = CANTransport(
-        SocketCANMedia(
-            config.driver.can.interface,
-            mtu=config.driver.can.mtu
-        ),
+        SocketCANMedia(config.driver.can.interface, mtu=config.driver.can.mtu),
         local_node_id=config.driver.can.node_id
     )
-    
     node_service = CANNodeService(transport)
     if not await node_service.start():
         return
 
     try:
-        tasks = []
-        for monitor_cfg in config.driver.monitors:
-            if not monitor_cfg.enabled:
-                continue
-                
-            subscriber = node_service.create_subscriber(
-                monitor_cfg.data_type,
-                monitor_cfg.port
-            )
-            if not subscriber:
-                continue
-
-            monitor_map = {
-                "Heartbeat_1_0": (HeartbeatMonitor, "Heartbeat"),
-                "OdometryAndVelocityPublish_1_0": (OdometryMonitor, "Odometry")
-            }
-            
-            if monitor_class := monitor_map.get(monitor_cfg.data_type.__name__):
-                tasks.append(asyncio.create_task(
-                    run_monitor(monitor_class[0](subscriber), monitor_class[1])
-                ))
-
-        await asyncio.gather(*tasks)
+        # 启动监控线程
+        monitor_thread = MonitorThread(node_service, config.driver.monitors)
+        await monitor_thread.start()
+        
+        # 主线程保持运行（后续可替换为UI事件循环）
+        while True:
+            await asyncio.sleep(1)
     except KeyboardInterrupt:
         logging.info("Application shutdown")
     finally:
+        await monitor_thread.stop()
         await node_service.stop()
 
 if __name__ == "__main__":
