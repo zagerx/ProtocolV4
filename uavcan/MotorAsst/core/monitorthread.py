@@ -1,13 +1,19 @@
 import asyncio
 import logging
-from typing import List
+from typing import List,Optional,Callable
 from MotorAsst.config.configdrivers import MonitorConfig
 from MotorAsst.drivers.can.transport import CANNodeService
 class MonitorThread:
-    def __init__(self, node_service: CANNodeService, monitor_configs: List[MonitorConfig]):
+    def __init__(
+        self, 
+        node_service: CANNodeService, 
+        monitor_configs: List[MonitorConfig],
+        ui_callback: Optional[Callable[[str, dict], None]] = None
+    ):
         self.node_service = node_service
         self.monitor_configs = monitor_configs
         self.tasks = []
+        self.ui_callback = ui_callback  # UI回调函数
 
     async def start(self):
         """启动所有监控任务"""
@@ -33,7 +39,11 @@ class MonitorThread:
             while True:
                 success, data = await monitor.monitor(1.0)
                 if success:
+                    # 1. 记录日志
                     logging.getLogger(name).info(self._format_data(name, data))
+                    # 2. 触发UI更新
+                    if self.ui_callback:
+                        self.ui_callback(name, data)
         except asyncio.CancelledError:
             pass
 

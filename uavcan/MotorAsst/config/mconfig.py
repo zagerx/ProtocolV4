@@ -1,18 +1,16 @@
 import logging
 from typing import Optional
 from pathlib import Path
-import yaml
-
-from MotorAsst.config.configdrivers import DriverConfig
-from MotorAsst.config.configapp import AppConfig
+from .configdrivers import DriverConfig
+from .configapp import AppConfig
+from .configui import UIConfig
 
 class ConfigManager:
     """
-    配置管理器（单例模式）
-    功能：
-    1. 分层配置管理
-    2. 文件持久化
-    3. 环境变量覆盖
+    配置管理器（无YAML版本）
+    职责：
+    1. 集中管理所有配置层级
+    2. 提供默认配置
     """
     _instance = None
 
@@ -23,64 +21,35 @@ class ConfigManager:
         return cls._instance
 
     def _init_config(self):
+        """初始化所有配置层级"""
         self.driver = DriverConfig.default()
         self.app = AppConfig.default()
-        self._config_file: Optional[Path] = None
+        self.ui = UIConfig()  # 直接实例化，不使用YAML加载
 
-    def load(self, file_path: str) -> bool:
-        """从YAML加载配置"""
-        try:
-            path = Path(file_path)
-            with open(path) as f:
-                data = yaml.safe_load(f) or {}
-            
-            # 更新驱动配置
-            if 'driver' in data:
-                driver_data = data['driver']
-                if 'can' in driver_data:
-                    self.driver.can.__dict__.update(driver_data['can'])
-                if 'monitors' in driver_data:
-                    self._update_monitors(driver_data['monitors'])
+    @property
+    def can_config(self):
+        """快捷访问CAN配置"""
+        return self.driver.can
 
-            # 更新应用配置
-            if 'app' in data:
-                self.app.__dict__.update(data['app'])
+    @property
+    def monitors_config(self):
+        """快捷访问监控器配置"""
+        return self.driver.monitors
 
-            self._config_file = path
-            return True
-        except Exception as e:
-            logging.error(f"Config load error: {e}")
-            return False
+    @property
+    def logging_config(self):
+        """快捷访问日志配置"""
+        return self.app.logging
 
-    def _update_monitors(self, monitors_data: list):
-        """动态更新监控器配置"""
-        for cfg in self.driver.monitors:
-            for data in monitors_data:
-                if cfg.data_type.__name__ == data.get('data_type'):
-                    cfg.enabled = data.get('enabled', True)
-                    break
+    def update_ui_config(self, **kwargs):
+        """动态更新UI配置"""
+        for k, v in kwargs.items():
+            if hasattr(self.ui, k):
+                setattr(self.ui, k, v)
+            else:
+                logging.warning(f"无效的UI配置项: {k}")
 
-    def save(self, file_path: Optional[str] = None) -> bool:
-        """保存配置到YAML"""
-        path = Path(file_path) if file_path else self._config_file
-        if not path:
-            return False
-
-        try:
-            data = {
-                'driver': {
-                    'can': self.driver.can.__dict__,
-                    'monitors': [
-                        {'data_type': m.data_type.__name__, 'port': m.port, 'enabled': m.enabled}
-                        for m in self.driver.monitors
-                    ]
-                },
-                'app': self.app.__dict__
-            }
-            path.parent.mkdir(exist_ok=True)
-            with open(path, 'w') as f:
-                yaml.dump(data, f, sort_keys=False)
-            return True
-        except Exception as e:
-            logging.error(f"Config save error: {e}")
-            return False
+# 示例用法：
+# config = ConfigManager()
+# print(config.ui.window_title)
+# config.update_ui_config(window_title="新标题")

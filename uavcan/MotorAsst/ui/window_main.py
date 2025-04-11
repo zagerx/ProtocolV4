@@ -1,32 +1,29 @@
 #!/usr/bin/env python3
 """
-主窗口界面 - 优化解耦版本
+主窗口界面 - 配置驱动版本
 """
 import time
 from PyQt6.QtWidgets import (
     QMainWindow, QLabel, QMessageBox, QVBoxLayout,
     QHBoxLayout, QGroupBox, QWidget, QStatusBar
 )
-from PyQt6.QtCore import Qt, pyqtSlot, QTimer  # 修正：从QtCore导入QTimer
+from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QFont
-from typing import Optional
-from config import UIConfig
+from MotorAsst.config.configui import UIConfig
 
 class MainWindow(QMainWindow):
     def __init__(self, ui_config: UIConfig):
         super().__init__()
         self._ui_config = ui_config
-        self._precision = ui_config.decimal_precision
-        self._last_heartbeat_time = 0  # 记录最后心跳时间
-        self._heartbeat_timeout = 2000  # 心跳超时阈值(ms)
+        self._last_heartbeat_time = 0
         self._init_ui()
         self._setup_connections()
-        self._start_status_timer()  # 启动状态检查定时器
+        self._start_status_timer()
 
     def _init_ui(self):
         """初始化所有UI组件"""
-        self.setWindowTitle("UAVCAN 电机助手")
-        self.resize(800, 600)
+        self.setWindowTitle(self._ui_config.window_title)
+        self.resize(*self._ui_config.window_size)
 
         # 主容器
         self.central_widget = QWidget()
@@ -34,22 +31,38 @@ class MainWindow(QMainWindow):
         self.main_layout = QVBoxLayout(self.central_widget)
 
         # 1. 状态显示组
+        self._init_status_group()
+
+        # 2. 里程计数据组
+        self._init_odometry_group()
+
+        # 3. 速度数据组
+        self._init_velocity_group()
+
+        # 状态栏
+        self._init_status_bar()
+
+    def _init_status_group(self):
+        """初始化状态显示组件"""
         self.status_group = QGroupBox("节点状态")
         status_layout = QHBoxLayout()
+        
         self.node_status_label = QLabel("未连接")
         self.node_mode_label = QLabel("模式: -")
         self.node_health_label = QLabel("健康: -")
         
         for widget in [self.node_status_label, self.node_mode_label, self.node_health_label]:
             widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            widget.setStyleSheet("font-weight: bold;")
+            widget.setStyleSheet(self._ui_config.label_style)
         
         status_layout.addWidget(self.node_status_label)
         status_layout.addWidget(self.node_mode_label)
         status_layout.addWidget(self.node_health_label)
         self.status_group.setLayout(status_layout)
+        self.main_layout.addWidget(self.status_group)
 
-        # 2. 里程计数据组
+    def _init_odometry_group(self):
+        """初始化里程计组件"""
         self.odom_group = QGroupBox("里程计数据")
         odom_layout = QHBoxLayout()
         
@@ -62,8 +75,10 @@ class MainWindow(QMainWindow):
         odom_layout.addWidget(QLabel("右轮里程:"))
         odom_layout.addWidget(self.right_odom_label)
         self.odom_group.setLayout(odom_layout)
+        self.main_layout.addWidget(self.odom_group)
 
-        # 3. 速度数据组
+    def _init_velocity_group(self):
+        """初始化速度组件"""
         self.vel_group = QGroupBox("速度数据")
         vel_layout = QHBoxLayout()
         
@@ -76,14 +91,11 @@ class MainWindow(QMainWindow):
         vel_layout.addWidget(QLabel("右轮速度:"))
         vel_layout.addWidget(self.right_vel_label)
         self.vel_group.setLayout(vel_layout)
-
-        # 添加到主布局
-        self.main_layout.addWidget(self.status_group)
-        self.main_layout.addWidget(self.odom_group)
         self.main_layout.addWidget(self.vel_group)
         self.main_layout.addStretch()
 
-        # 状态栏
+    def _init_status_bar(self):
+        """初始化状态栏"""
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
         self.status_label = QLabel("就绪")
@@ -93,15 +105,15 @@ class MainWindow(QMainWindow):
         """创建统一风格的数据标签"""
         label = QLabel(text)
         font = QFont()
-        font.setPointSize(12)
+        font.setPointSize(self._ui_config.data_label_font_size)
         font.setBold(True)
         label.setFont(font)
         label.setAlignment(Qt.AlignmentFlag.AlignRight)
-        label.setMinimumWidth(100)
+        label.setMinimumWidth(self._ui_config.data_label_min_width)
         return label
 
     def _setup_connections(self):
-        """初始化信号连接"""
+        """初始化信号连接（可扩展）"""
         pass
 
     def _start_status_timer(self):
@@ -113,7 +125,7 @@ class MainWindow(QMainWindow):
     def _check_connection_status(self):
         """检查连接状态"""
         current_time = time.time() * 1000  # 当前时间戳(ms)
-        if current_time - self._last_heartbeat_time > self._heartbeat_timeout:
+        if current_time - self._last_heartbeat_time > self._ui_config.heartbeat_timeout_ms:
             self._show_disconnected_status()
 
     def _show_disconnected_status(self):
@@ -122,41 +134,34 @@ class MainWindow(QMainWindow):
         self.node_mode_label.setText("模式: 离线")
         self.node_health_label.setText("健康: 故障")
         self.node_health_label.setStyleSheet("color: red;")
-        
-        # 清空里程计和速度显示
+        self._clear_data_display()
+        self.status_label.setText("通信超时")
+
+    def _clear_data_display(self):
+        """清空数据展示"""
         self.left_odom_label.setText("-.---")
         self.right_odom_label.setText("-.---")
         self.left_vel_label.setText("-.---")
         self.right_vel_label.setText("-.---")
-        self.status_label.setText("通信超时")
 
     @pyqtSlot(dict)
     def handle_heartbeat(self, data: dict):
-        """处理心跳数据"""
-        self._last_heartbeat_time = time.time() * 1000  # 更新最后心跳时间
+        """处理心跳数据（线程安全）"""
+        self._last_heartbeat_time = time.time() * 1000
         
-        mode_map = {
-            0: "运行", 1: "初始化",
-            2: "维护", 3: "升级"
-        }
-        health_map = {
-            0: ("正常", "green"),
-            1: ("注意", "orange"),
-            2: ("警告", "yellow"),
-            3: ("故障", "red")
-        }
-
-        health_text, health_color = health_map.get(data['health'], ("未知", "gray"))
+        health_text, health_color = self._ui_config.status_health_map.get(
+            data['health'], ("未知", "gray"))
         
         self.node_status_label.setText(f"节点ID: {data['node_id']}")
-        self.node_mode_label.setText(f"模式: {mode_map.get(data['mode'], '未知')}")
+        self.node_mode_label.setText(
+            f"模式: {self._ui_config.status_mode_map.get(data['mode'], '未知')}")
         self.node_health_label.setText(f"健康: {health_text}")
         self.node_health_label.setStyleSheet(f"color: {health_color};")
 
     @pyqtSlot(dict)
     def handle_odometry(self, data: dict):
-        """处理里程计数据"""
-        fmt = f"{{:.{self._precision}f}}"
+        """处理里程计数据（线程安全）"""
+        fmt = f"{{:.{self._ui_config.decimal_precision}f}}"
         self.left_odom_label.setText(fmt.format(data['left_odometry']))
         self.right_odom_label.setText(fmt.format(data['right_odometry']))
         self.left_vel_label.setText(fmt.format(data['left_velocity']))
@@ -165,7 +170,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def handle_error(self, message: str):
-        """处理错误信息"""
+        """处理错误信息（线程安全）"""
         QMessageBox.critical(self, "通信错误", message)
         self.status_label.setText(f"错误: {message[:50]}...")
         self._show_disconnected_status()
