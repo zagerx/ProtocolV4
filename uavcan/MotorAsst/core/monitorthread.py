@@ -3,8 +3,6 @@ import logging
 from typing import List
 from MotorAsst.config.configdrivers import MonitorConfig
 from MotorAsst.drivers.can.transport import CANNodeService
-from MotorAsst.drivers.can.monitors.heartbeat import HeartbeatMonitor
-from MotorAsst.drivers.can.monitors.odometry import OdometryMonitor
 class MonitorThread:
     def __init__(self, node_service: CANNodeService, monitor_configs: List[MonitorConfig]):
         self.node_service = node_service
@@ -23,17 +21,12 @@ class MonitorThread:
             )
             if not subscriber:
                 continue
-
-            monitor_map = {
-                "Heartbeat_1_0": (HeartbeatMonitor, "Heartbeat"),
-                "OdometryAndVelocityPublish_1_0": (OdometryMonitor, "Odometry")
-            }
-            
-            if monitor_class := monitor_map.get(monitor_cfg.data_type.__name__):
-                self.tasks.append(asyncio.create_task(
-                    self._run_monitor(monitor_class[0](subscriber), monitor_class[1])
-                ))
-
+            self.tasks.append(asyncio.create_task(
+                self._run_monitor(
+                    monitor_cfg.monitor_class(subscriber),
+                    monitor_cfg.display_name
+                )
+            ))
     async def _run_monitor(self, monitor, name: str):
         """监控任务运行逻辑（与原run_monitor一致）"""
         try:

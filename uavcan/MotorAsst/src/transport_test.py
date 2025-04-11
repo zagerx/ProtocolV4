@@ -6,37 +6,11 @@ from MotorAsst.config import ConfigManager
 from pycyphal.transport.can import CANTransport
 from pycyphal.transport.can.media.socketcan import SocketCANMedia
 from MotorAsst.drivers.can.transport import CANNodeService
-from logging.handlers import RotatingFileHandler
-
-def setup_logging(config):
-    """根据配置初始化日志系统"""
-    logger = logging.getLogger()
-    logger.setLevel(config.logging.level)
-
-    # 文件日志（自动轮转）
-    file_handler = RotatingFileHandler(
-        filename=config.logging.file,
-        maxBytes=config.logging.max_size * 1024 * 1024,
-        backupCount=config.logging.backup_count,
-        encoding='utf-8'
-    )
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%H:%M:%S'
-    ))
-    logger.addHandler(file_handler)
-
-    # 可选控制台输出
-    if config.logging.enable_console:
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(logging.Formatter(
-            '[%(levelname)s] %(name)s: %(message)s'
-        ))
-        logger.addHandler(console_handler)
+from MotorAsst.config.configlog import setup_logging  # 直接从configlog导入
 
 async def main():
     config = ConfigManager()
-    setup_logging(config.app)
+    setup_logging(config.app.logging)
     
     # 初始化CAN总线
     transport = CANTransport(
