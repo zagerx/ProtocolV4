@@ -24,7 +24,20 @@ class UIController:
             self.window.handle_heartbeat(data)
         elif name == "Odometry":
             self.window.handle_odometry(data)
+    def enable_motor(self) -> bool:
+        """使能电机"""
+        print("motor enable")
+        return True  # 返回操作结果
 
+    def disable_motor(self) -> bool:
+        """失能电机"""
+        print("motor disable")
+        return True
+    def stop(self):
+        """停止控制器资源"""
+        print("Controller stopped")
+        # 可添加资源释放逻辑
+    
 async def async_main():
     """主业务逻辑协程"""
     # 初始化配置和日志
@@ -35,6 +48,7 @@ async def async_main():
     app = QApplication([])
     window = MainWindow(config.ui)
     controller = UIController(window)
+    window.set_controller(controller)  # 关键修复：建立控制器关联
 
     # 初始化CAN总线
     transport = CANTransport(

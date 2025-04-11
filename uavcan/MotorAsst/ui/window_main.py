@@ -5,12 +5,12 @@
 import time
 from PyQt6.QtWidgets import (
     QMainWindow, QLabel, QMessageBox, QVBoxLayout,
-    QHBoxLayout, QGroupBox, QWidget, QStatusBar
+    QHBoxLayout, QGroupBox, QWidget, QStatusBar,QPushButton
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QFont
 from MotorAsst.config.configui import UIConfig
-
+import logging
 class MainWindow(QMainWindow):
     def __init__(self, ui_config: UIConfig):
         super().__init__()
@@ -41,6 +41,9 @@ class MainWindow(QMainWindow):
 
         # 状态栏
         self._init_status_bar()
+
+        # 按钮
+        self._init_control_buttons()
 
     def _init_status_group(self):
         """初始化状态显示组件"""
@@ -101,6 +104,61 @@ class MainWindow(QMainWindow):
         self.status_label = QLabel("就绪")
         self.status_bar.addPermanentWidget(self.status_label)
 
+    def _init_control_buttons(self):
+        """初始化使能/失能控制按钮"""
+        self.control_group = QGroupBox("电机控制")
+        control_layout = QHBoxLayout()
+        
+        # 使能按钮
+        self.enable_btn = QPushButton("使能 (ENABLE)")
+        self.enable_btn.setStyleSheet(
+            "background-color: #4CAF50; color: white; font-weight: bold;"  # 绿色
+        )
+        
+        # 失能按钮
+        self.disable_btn = QPushButton("失能 (DISABLE)")
+        self.disable_btn.setStyleSheet(
+            "background-color: #F44336; color: white; font-weight: bold;"  # 红色
+        )
+        
+        control_layout.addWidget(self.enable_btn)
+        control_layout.addWidget(self.disable_btn)
+        self.control_group.setLayout(control_layout)
+        self.main_layout.addWidget(self.control_group)
+
+    def _setup_connections(self):
+        """初始化信号连接"""
+        self.enable_btn.clicked.connect(self._on_enable)
+        self.disable_btn.clicked.connect(self._on_disable)
+
+    def _on_enable(self):
+        """使能按钮回调"""
+        if hasattr(self, '_controller'):
+            if self._controller.enable_motor():
+                self.status_label.setText("电机已使能")
+                return
+        
+        QMessageBox.critical(
+            self,
+            "操作失败",
+            "无法使能电机",
+            buttons=QMessageBox.StandardButton.Ok
+        )
+
+    def _on_disable(self):
+        """失能按钮回调"""
+        if hasattr(self, '_controller'):
+            if self._controller.disable_motor():
+                self.status_label.setText("电机已失能")
+                return
+        
+        QMessageBox.critical(
+            self,
+            "操作失败",
+            "无法失能电机",
+            buttons=QMessageBox.StandardButton.Ok
+        )
+
     def _create_data_label(self, text: str) -> QLabel:
         """创建统一风格的数据标签"""
         label = QLabel(text)
@@ -111,10 +169,6 @@ class MainWindow(QMainWindow):
         label.setAlignment(Qt.AlignmentFlag.AlignRight)
         label.setMinimumWidth(self._ui_config.data_label_min_width)
         return label
-
-    def _setup_connections(self):
-        """初始化信号连接（可扩展）"""
-        pass
 
     def _start_status_timer(self):
         """启动状态检查定时器"""
@@ -178,7 +232,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         """窗口关闭事件处理"""
         if hasattr(self, '_controller'):
-            self._controller.stop()
+            try:
+                self._controller.stop()  # 现在UIController有stop方法
+            except Exception as e:
+                logging.error(f"Controller stop failed: {e}")
         event.accept()
 
     def set_controller(self, controller):
