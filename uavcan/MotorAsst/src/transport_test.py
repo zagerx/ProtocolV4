@@ -9,30 +9,30 @@ from MotorAsst.drivers.can.transport import CANNodeService
 from MotorAsst.core.monitorthread import MonitorThread
 from MotorAsst.core.commendthread import CommandThread
 from MotorAsst.config.configlog import setup_logging
-from MotorAsst.ui.window_main import MainWindow
+from MotorAsst.ui.windowmain import MainWindow  # 修改为导入新的窗口类
 from MotorAsst.config import ConfigManager
 
-class UIController:
-    def __init__(self, window: MainWindow):
-        self.window = window
+# class UIController:
+#     def __init__(self, window: MainWindow):
+#         self.window = window
 
-    def on_monitor_data(self, name: str, data: dict):
-        if name == "Heartbeat":
-            self.window.handle_heartbeat(data)
-        elif name == "Odometry":
-            self.window.handle_odometry(data)
-    def enable_motor(self) -> bool:
-        """使能电机"""
-        print("motor enable")
-        return True  # 返回操作结果
+#     def on_monitor_data(self, name: str, data: dict):
+#         if name == "Heartbeat":
+#             self.window.handle_heartbeat(data)
+#         elif name == "Odometry":
+#             self.window.handle_odometry(data)
+#     def enable_motor(self) -> bool:
+#         """使能电机"""
+#         print("motor enable")
+#         return True  # 返回操作结果
 
-    def disable_motor(self) -> bool:
-        """失能电机"""
-        print("motor disable")
-        return True
-    def stop(self):
-        """停止控制器资源"""
-        print("Controller stopped")
+#     def disable_motor(self) -> bool:
+#         """失能电机"""
+#         print("motor disable")
+#         return True
+#     def stop(self):
+#         """停止控制器资源"""
+#         print("Controller stopped")
 
 async def async_main():
     """主业务逻辑协程"""
@@ -42,9 +42,9 @@ async def async_main():
 
     # 初始化Qt
     app = QApplication([])
-    window = MainWindow(config.ui)
-    controller = UIController(window)
-    window.set_controller(controller)
+    window = MainWindow()
+    # controller = UIController(window)
+    # window.set_controller(controller)
 
     # 初始化CAN总线
     transport = CANTransport(
@@ -73,6 +73,7 @@ async def async_main():
         await command_thread.send_command("MotorEnable", {"enable_state": 1})
         
         window.show()
+        # window.
         await asyncio.get_event_loop().create_future()
     except asyncio.CancelledError:
         logging.info("正常退出")

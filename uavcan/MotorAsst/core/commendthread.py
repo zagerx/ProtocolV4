@@ -70,7 +70,6 @@ class CommandThread:
             self._logger.error(f"命令 {command_name} 失败: {e}", exc_info=True)
             return False
         finally:
-            print("CLEAR CLIENT")
             # 确保客户端被清理
             if client is not None:
                 client.close()
