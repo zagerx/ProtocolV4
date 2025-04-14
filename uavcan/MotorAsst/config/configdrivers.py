@@ -3,8 +3,7 @@ from typing import Type, Any, List, Dict
 from uavcan.node import Heartbeat_1_0
 from dinosaurs.actuator.wheel_motor import OdometryAndVelocityPublish_1_0, Enable_1_0
 from MotorAsst.drivers.can.monitors.base import BaseMonitor
-from MotorAsst.drivers.can.monitors.heartbeat import HeartbeatMonitor
-from MotorAsst.drivers.can.monitors.odometry import OdometryMonitor
+from MotorAsst.drivers.can.monitors.commandmonitors import CommandMonitor
 
 @dataclass
 class CanConfig:
@@ -50,13 +49,13 @@ class DriverConfig:
                 MonitorConfig(
                     data_type=Heartbeat_1_0,
                     port=7509,
-                    monitor_class=HeartbeatMonitor,
+                    monitor_class=CommandMonitor,
                     display_name="Heartbeat"
                 ),
                 MonitorConfig(
                     data_type=OdometryAndVelocityPublish_1_0,
                     port=1100,
-                    monitor_class=OdometryMonitor,
+                    monitor_class=CommandMonitor,
                     display_name="Odometry"
                 )
             ],

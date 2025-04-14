@@ -60,7 +60,7 @@ async def async_main():
         monitor_thread = MonitorThread(
             node_service,
             config.driver.monitors,
-            ui_callback=controller.on_monitor_data
+            # ui_callback=controller.on_monitor_data
         )
         
         # 启动命令线程

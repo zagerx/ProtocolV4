@@ -4,7 +4,7 @@ from typing import Tuple, Optional
 from uavcan.node import Heartbeat_1_0
 from .base import BaseMonitor
 
-class HeartbeatMonitor(BaseMonitor):
+class CommandMonitor(BaseMonitor):
     """
     心跳监控器（完整实现BaseMonitor接口）
     """
@@ -25,12 +25,7 @@ class HeartbeatMonitor(BaseMonitor):
             )
             if result:
                 msg, transfer = result
-                return True, {
-                    "node_id": transfer.source_node_id,
-                    "mode": msg.mode.value,
-                    "health": msg.health.value,
-                    "uptime": msg.uptime
-                }
+                return (True, result)
             return False, None
         except Exception as e:
             self._logger.error(f"Monitor error: {e}")
