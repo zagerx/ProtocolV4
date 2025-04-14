@@ -29,8 +29,10 @@ class CommandConfig:
     data_type: Type[Any]        # 协议数据类型类
     server_node_id: int         # 目标节点ID
     port: int                   # 端口号
-    timeout: float              # 超时时间(秒)
     display_name: str           # 显示名称
+    timeout: float = 1.0        # 超时时间(秒)
+    execution_mode: str = "once"  # 执行模式: "once"或"periodic"
+    interval: float = 3.0       # 周期性执行间隔(秒)
     enabled: bool = True
 
 @dataclass 
@@ -63,8 +65,8 @@ class DriverConfig:
                     data_type=Enable_1_0,
                     server_node_id=28,
                     port=113,
-                    timeout=0.2,
-                    display_name="Motor Enable"
+                    display_name="Motor Enable",
+                    execution_mode="periodic"  # 使能命令只执行一次
                 )
             }
         )
