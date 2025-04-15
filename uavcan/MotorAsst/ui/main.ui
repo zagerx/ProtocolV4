@@ -267,7 +267,7 @@
        <item>
         <widget class="QLabel" name="label_5_1">
          <property name="text">
-          <string>节点状态:</string>
+          <string>节点ID:</string>
          </property>
         </widget>
        </item>
@@ -285,7 +285,7 @@
        <item>
         <widget class="QLabel" name="label_5_2">
          <property name="text">
-          <string>健康状态:</string>
+          <string>节点状态:</string>
          </property>
         </widget>
        </item>

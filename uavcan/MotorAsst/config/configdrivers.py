@@ -21,6 +21,7 @@ class MonitorConfig:
     monitor_class: Type[BaseMonitor]
     display_name: str           # 显示名称
     enabled: bool = True
+    priority: int = 1           # 0:实时 1:中频 2:低频
 
 @dataclass
 class CommandConfig:
@@ -50,13 +51,15 @@ class DriverConfig:
                     data_type=Heartbeat_1_0,
                     port=7509,
                     monitor_class=CommandMonitor,
-                    display_name="Heartbeat"
+                    display_name="Heartbeat",
+                    priority = 2
                 ),
                 MonitorConfig(
                     data_type=OdometryAndVelocityPublish_1_0,
                     port=1100,
                     monitor_class=CommandMonitor,
-                    display_name="Odometry"
+                    display_name="Odometry",
+                    priority = 0
                 )
             ],
             commands={
@@ -65,7 +68,7 @@ class DriverConfig:
                     server_node_id=28,
                     port=113,
                     display_name="Motor Enable",
-                    execution_mode="periodic"  # 使能命令只执行一次
+                    execution_mode="once"  # 使能命令只执行一次
                 )
             }
         )

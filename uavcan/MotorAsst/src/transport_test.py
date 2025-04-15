@@ -12,28 +12,6 @@ from MotorAsst.config.configlog import setup_logging
 from MotorAsst.ui.windowmain import MainWindow  # 修改为导入新的窗口类
 from MotorAsst.config import ConfigManager
 
-# class UIController:
-#     def __init__(self, window: MainWindow):
-#         self.window = window
-
-#     def on_monitor_data(self, name: str, data: dict):
-#         if name == "Heartbeat":
-#             self.window.handle_heartbeat(data)
-#         elif name == "Odometry":
-#             self.window.handle_odometry(data)
-#     def enable_motor(self) -> bool:
-#         """使能电机"""
-#         print("motor enable")
-#         return True  # 返回操作结果
-
-#     def disable_motor(self) -> bool:
-#         """失能电机"""
-#         print("motor disable")
-#         return True
-#     def stop(self):
-#         """停止控制器资源"""
-#         print("Controller stopped")
-
 async def async_main():
     """主业务逻辑协程"""
     # 初始化配置和日志
@@ -43,8 +21,6 @@ async def async_main():
     # 初始化Qt
     app = QApplication([])
     window = MainWindow()
-    # controller = UIController(window)
-    # window.set_controller(controller)
 
     # 初始化CAN总线
     transport = CANTransport(
@@ -60,9 +36,9 @@ async def async_main():
         monitor_thread = MonitorThread(
             node_service,
             config.driver.monitors,
-            # ui_callback=controller.on_monitor_data
         )
-        
+        monitor_thread.signals.raw_data_updated.connect(window.on_raw_data)  # 关键连接！
+ 
         # 启动命令线程
         command_thread = CommandThread(node_service, config.driver.commands)
         
