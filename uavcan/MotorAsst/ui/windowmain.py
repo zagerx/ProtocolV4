@@ -134,9 +134,23 @@ class MainWindow(QMainWindow):
         """处理里程计数据"""
         try:
             msg, _ = raw_data
+            timestamp = time.time()  # 获取当前时间戳
+
             self.ui.lineEdit_6_1.setText(f"{msg.current_velocity[0].meter_per_second:.3f}")
             self.ui.lineEdit_6_2.setText(f"{msg.current_velocity[1].meter_per_second:.3f}")
             self.ui.lineEdit_7_1.setText(f"{msg.odometry[0].meter:.3f}")
             self.ui.lineEdit_7_2.setText(f"{msg.odometry[1].meter:.3f}")
+            # 准备CSV数据行
+            csv_line = (
+                f"timestamp:{timestamp:.6f},"
+                f"v_l:{msg.current_velocity[0].meter_per_second:.3f},"
+                f"v_r:{msg.current_velocity[1].meter_per_second:.3f},"
+                f"o_l:{msg.odometry[0].meter:.3f},"
+                f"o_r:{msg.odometry[1].meter:.3f}\n"
+            )
+            
+            # 写入文件（追加模式）
+            with open("./MotorAsst/output/odom.csv", "a", encoding="utf-8") as f:
+                f.write(csv_line)            
         except Exception as e:
             print(f"里程计处理异常: {e}")

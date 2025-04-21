@@ -2,15 +2,66 @@
 import asyncio
 import logging
 import qasync
+import numpy as np
 from PyQt6.QtWidgets import QApplication
 from pycyphal.transport.can import CANTransport
 from pycyphal.transport.can.media.socketcan import SocketCANMedia
+from uavcan.si.unit.velocity import Scalar_1_0
+from dinosaurs.actuator.wheel_motor import SetTargetValue_2_0
 from MotorAsst.drivers.can.transport import CANNodeService
 from MotorAsst.core.monitorthread import MonitorThread
 from MotorAsst.core.commendthread import CommandThread
 from MotorAsst.config.configlog import setup_logging
-from MotorAsst.ui.windowmain import MainWindow  # 修改为导入新的窗口类
+from MotorAsst.ui.windowmain import MainWindow
 from MotorAsst.config import ConfigManager
+import os
+class TargetValueClient:
+    def __init__(self, node_service: CANNodeService, target_node_id: int = 28, port: int = 114):
+        self._node_service = node_service
+        self._target_node_id = target_node_id
+        self._port = port
+        self._client = None
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+    async def send_velocity_command(self, velocities: list[float]) -> bool:
+        """发送速度指令到目标节点"""
+        if not self._client:
+            self._client = self._node_service.create_client(
+                SetTargetValue_2_0,
+                self._target_node_id,
+                self._port
+            )
+            if not self._client:
+                self._logger.error("Failed to create SetTargetValue client")
+                return False
+
+        try:
+            # 创建速度指令数组
+            velocity_objects = np.array(
+                [Scalar_1_0(v) for v in velocities],
+                dtype=object
+            )
+            request = SetTargetValue_2_0.Request(velocity=velocity_objects)
+            
+            response = await asyncio.wait_for(
+                self._client.call(request),
+                timeout=1.0
+            )
+            
+            if response:
+                self._logger.info(f"Velocity command sent successfully: {response}")
+                return True
+            return False
+        except asyncio.TimeoutError:
+            self._logger.warning("Velocity command timeout")
+            return False
+        except Exception as ex:
+            self._logger.error(f"Velocity command failed: {ex}")
+            return False
+
+    async def close(self):
+        if self._client:
+            self._client.close()
 
 async def async_main():
     """主业务逻辑协程"""
@@ -22,6 +73,11 @@ async def async_main():
     app = QApplication([])
     window = MainWindow()
 
+
+    if not os.path.exists("./MotorAsst/output/odom.csv"):
+        with open("./MotorAsst/output/odom.csv", "w", encoding="utf-8") as f:
+            f.write("\n")
+
     # 初始化CAN总线
     transport = CANTransport(
         SocketCANMedia(config.driver.can.interface, mtu=config.driver.can.mtu),
@@ -30,7 +86,8 @@ async def async_main():
     node_service = CANNodeService(transport)
     if not await node_service.start():
         return
-
+    # 初始化速度指令客户端
+    velocity_client = TargetValueClient(node_service)
     try:
         # 启动监控线程
         monitor_thread = MonitorThread(
@@ -46,8 +103,9 @@ async def async_main():
         await command_thread.start()
         
         # 发送单次使能命令
-        await command_thread.send_command("MotorEnable", {"enable_state": 1})
-        
+        await command_thread.send_command("MotorEnable", {"enable_state": 0})
+        await velocity_client.send_velocity_command([1.3, 2.7])
+
         window.show()
         # window.
         await asyncio.get_event_loop().create_future()
