@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Type, Any, List, Dict
 from uavcan.node import Heartbeat_1_0
-from dinosaurs.actuator.wheel_motor import OdometryAndVelocityPublish_1_0, Enable_1_0
+from dinosaurs.actuator.wheel_motor import SetTargetValue_2_0, OdometryAndVelocityPublish_1_0, Enable_1_0
 from MotorAsst.drivers.can.monitors.base import BaseMonitor
 from MotorAsst.drivers.can.monitors.commandmonitors import CommandMonitor
+from uavcan.si.unit.velocity import Scalar_1_0
+import numpy as np
 
 @dataclass
 class CanConfig:
@@ -16,23 +18,21 @@ class CanConfig:
 @dataclass
 class MonitorConfig:
     """数据监控配置"""
-    data_type: Type[Any]        # 协议数据类型类
-    port: int                   # 端口号
+    data_type: Type[Any]
+    port: int
     monitor_class: Type[BaseMonitor]
-    display_name: str           # 显示名称
+    display_name: str
     enabled: bool = True
-    priority: int = 1           # 0:实时 1:中频 2:低频
+    priority: int = 1
 
 @dataclass
 class CommandConfig:
     """命令配置"""
-    data_type: Type[Any]        # 协议数据类型类
-    server_node_id: int         # 目标节点ID
-    port: int                   # 端口号
-    display_name: str           # 显示名称
-    timeout: float = 1.0        # 超时时间(秒)
-    execution_mode: str = "once"  # 执行模式: "once"或"periodic"
-    interval: float = 3.0       # 周期性执行间隔(秒)
+    data_type: Type[Any]
+    server_node_id: int
+    port: int
+    display_name: str
+    timeout: float = 1.0
     enabled: bool = True
 
 @dataclass 
@@ -40,7 +40,7 @@ class DriverConfig:
     """驱动层总配置"""
     can: CanConfig
     monitors: List[MonitorConfig]
-    commands: Dict[str, CommandConfig]  # 命令配置字典
+    commands: Dict[str, CommandConfig]
 
     @classmethod
     def default(cls):
@@ -52,14 +52,14 @@ class DriverConfig:
                     port=7509,
                     monitor_class=CommandMonitor,
                     display_name="Heartbeat",
-                    priority = 2
+                    priority=2
                 ),
                 MonitorConfig(
                     data_type=OdometryAndVelocityPublish_1_0,
                     port=1100,
                     monitor_class=CommandMonitor,
                     display_name="Odometry",
-                    priority = 0
+                    priority=0
                 )
             ],
             commands={
@@ -68,7 +68,21 @@ class DriverConfig:
                     server_node_id=28,
                     port=113,
                     display_name="Motor Enable",
-                    execution_mode="once"  # 使能命令只执行一次
-                )
+                ),
+                "SetVelocity": CommandConfig(
+                    data_type=SetTargetValue_2_0,
+                    server_node_id=28,
+                    port=117,
+                    display_name="Set Velocity"
+                )                
             }
         )
+
+    @staticmethod
+    def build_velocity_request(params: Dict[str, float]) -> Any:
+        """构建速度控制请求"""
+        velocities = np.array([
+            Scalar_1_0(params["left"]),
+            Scalar_1_0(params["right"])
+        ], dtype=object)
+        return SetTargetValue_2_0.Request(velocity=velocities)

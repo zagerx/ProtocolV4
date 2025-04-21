@@ -1,3 +1,10 @@
+"""
+
+低速测试代码
+电机正转一段时间，反转一段时间，循环n次
+
+"""
+
 #!/usr/bin/env python3
 import asyncio
 import logging
@@ -102,10 +109,14 @@ async def async_main():
         await monitor_thread.start()
         await command_thread.start()
         
-        # 发送单次使能命令
-        await command_thread.send_command("MotorEnable", {"enable_state": 0})
-        await velocity_client.send_velocity_command([1.3, 2.7])
-
+        # 发送使能命令并启动速度循环
+        if await command_thread.send_command("MotorEnable", {"enable_state": 0}):
+            await command_thread.start_velocity_loop(
+                initial_velocity={"left": -0.03, "right": 0.03},
+                interval_ms = 300,
+                duration_per_direction=8.0,
+                cycles= 100
+            )
         window.show()
         # window.
         await asyncio.get_event_loop().create_future()
