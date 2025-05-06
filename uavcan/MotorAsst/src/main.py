@@ -62,6 +62,17 @@ class TargetValueClient:
     async def close(self):
         if self._client:
             self._client.close()
+# 连接控制模式信号 - 使用下划线命名
+def _handle_operation_mode(mode):
+    logging.info(f"Operation mode changed to: {mode}")
+    if mode == "start":
+        # 执行启动指令
+        print("start motor")
+        pass
+    elif mode == "stop":
+        # 执行停止指令
+        print("stop motor")
+        pass
 
 async def async_main():
     """主业务逻辑协程"""
@@ -73,6 +84,7 @@ async def async_main():
     app = QApplication([])
     window = MainWindow()
 
+    window.operationModeChanged.connect(_handle_operation_mode)
 
     if not os.path.exists("./MotorAsst/output/odom.csv"):
         with open("./MotorAsst/output/odom.csv", "w", encoding="utf-8") as f:

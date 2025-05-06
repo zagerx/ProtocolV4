@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QLabel
-from PyQt6.QtCore import QTimer, pyqtSlot
+from PyQt6.QtCore import QTimer, pyqtSlot,pyqtSignal
 from MotorAsst.ui.uimain import Ui_MainWindow
 from collections import deque
 import time
@@ -11,6 +11,8 @@ class MainWindow(QMainWindow):
     """
     主窗口类，封装UI界面和基本功能
     """
+    operationModeChanged = pyqtSignal(str)  # 添加这行
+
     def __init__(self):
         super().__init__()
         # 初始化UI
@@ -28,10 +30,19 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("电机监控系统")
         # 状态组
         self._init_status_group()
-
+        # 设置互斥组
+        self.ui.radioButton_4.setAutoExclusive(True)
+        self.ui.radioButton_5.setAutoExclusive(True)
+        # 连接信号 - 使用下划线命名
+        self.ui.radioButton_4.toggled.connect(
+            lambda checked: self._on_operation_mode_changed(checked, "start"))
+        self.ui.radioButton_5.toggled.connect(
+            lambda checked: self._on_operation_mode_changed(checked, "stop"))
+                
     def _init_status_group(self):
         """初始化状态显示组件"""
         self.ui.lineEdit_5_1.setReadOnly(True)
+        self.ui.radioButton_5.setChecked(True)
 
     def _init_timers(self):
         """初始化多级刷新定时器"""
@@ -46,9 +57,9 @@ class MainWindow(QMainWindow):
         self._mid_freq_timer.start(20)  # ≈50Hz刷新
         
         # 低频数据使用信号槽直连
-        self._check_timer = QTimer()
-        self._check_timer.timeout.connect(self._check_heartbeat)
-        self._check_timer.start(1000)  # 每秒检查一次
+        self._low_freq_timer = QTimer()
+        self._low_freq_timer.timeout.connect(self._check_heartbeat)
+        self._low_freq_timer.start(1000)  # 每秒检查一次
 
     @pyqtSlot(str, object, int)
     def on_raw_data(self, name, raw_data, priority):
@@ -154,3 +165,10 @@ class MainWindow(QMainWindow):
                 f.write(csv_line)            
         except Exception as e:
             print(f"里程计处理异常: {e}")
+
+
+    def _on_operation_mode_changed(self, checked, mode):
+        """操作模式变化处理"""
+        if checked:
+            self.operationModeChanged.emit(mode)
+            # self.ui.lineEdit_5_3.setText(mode.capitalize())
