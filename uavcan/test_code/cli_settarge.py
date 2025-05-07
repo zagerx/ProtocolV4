@@ -24,7 +24,7 @@ async def client_settarget_process():
             unique_id=bytes.fromhex("DEADBEEFCAFEBABE12345678ABCDEF01")
         )
     )
-    client = node.make_client(SetTargetValue_2_0, server_node_id=28, port_name=114)
+    client = node.make_client(SetTargetValue_2_0, server_node_id=28, port_name=117)
 
     try:
         # 创建包含两个不同速度值的数组：1.0 m/s 和 2.0 m/s

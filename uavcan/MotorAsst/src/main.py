@@ -14,54 +14,10 @@ from MotorAsst.core.commendthread import CommandThread
 from MotorAsst.config.configlog import setup_logging
 from MotorAsst.ui.windowmain import MainWindow
 from MotorAsst.config import ConfigManager
+from dinosaurs.peripheral import OperateRemoteDevice_1_0
+
 import os
-class TargetValueClient:
-    def __init__(self, node_service: CANNodeService, target_node_id: int = 28, port: int = 114):
-        self._node_service = node_service
-        self._target_node_id = target_node_id
-        self._port = port
-        self._client = None
-        self._logger = logging.getLogger(self.__class__.__name__)
 
-    async def send_velocity_command(self, velocities: list[float]) -> bool:
-        """发送速度指令到目标节点"""
-        if not self._client:
-            self._client = self._node_service.create_client(
-                SetTargetValue_2_0,
-                self._target_node_id,
-                self._port
-            )
-            if not self._client:
-                self._logger.error("Failed to create SetTargetValue client")
-                return False
-
-        try:
-            # 创建速度指令数组
-            velocity_objects = np.array(
-                [Scalar_1_0(v) for v in velocities],
-                dtype=object
-            )
-            request = SetTargetValue_2_0.Request(velocity=velocity_objects)
-            
-            response = await asyncio.wait_for(
-                self._client.call(request),
-                timeout=1.0
-            )
-            
-            if response:
-                self._logger.info(f"Velocity command sent successfully: {response}")
-                return True
-            return False
-        except asyncio.TimeoutError:
-            self._logger.warning("Velocity command timeout")
-            return False
-        except Exception as ex:
-            self._logger.error(f"Velocity command failed: {ex}")
-            return False
-
-    async def close(self):
-        if self._client:
-            self._client.close()
 # 连接控制模式信号 - 使用下划线命名
 def _handle_operation_mode(mode):
     logging.info(f"Operation mode changed to: {mode}")
@@ -99,7 +55,6 @@ async def async_main():
     if not await node_service.start():
         return
     # 初始化速度指令客户端
-    velocity_client = TargetValueClient(node_service)
     try:
         # 启动监控线程
         monitor_thread = MonitorThread(
