@@ -32,6 +32,9 @@ class CommandThread:
             return False
 
         # 特殊处理使能命令
+        if command_name == "OperateBrake":
+            return await self._send_brake_command(params)
+        
         if command_name == "MotorEnable":
             if params.get("enable_state", 0) == 1:
                 self._logger.info("电机使能")
@@ -71,6 +74,18 @@ class CommandThread:
             except asyncio.CancelledError:
                 self._logger.info("速度循环控制已停止")
             self._velocity_loop_task = None
+
+    async def _send_brake_command(self, params: Dict) -> bool:
+        """执行刹车操作命令"""
+        try:
+            return await self._send_single_command("OperateBrake", {
+                "method": params.get("method", 0),
+                "name": params.get("name", "m-brake"),
+                "param": params.get("param", "")
+            })
+        except Exception as e:
+            self._logger.error(f"刹车命令执行失败: {e}")
+            return False
 
     async def _velocity_control_loop(self,
                                    initial_velocity: Dict[str, float],

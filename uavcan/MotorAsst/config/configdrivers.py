@@ -6,6 +6,7 @@ from MotorAsst.drivers.can.monitors.base import BaseMonitor
 from MotorAsst.drivers.can.monitors.commandmonitors import CommandMonitor
 from uavcan.si.unit.velocity import Scalar_1_0
 import numpy as np
+from dinosaurs.peripheral import OperateRemoteDevice_1_0
 
 @dataclass
 class CanConfig:
@@ -74,7 +75,13 @@ class DriverConfig:
                     server_node_id=28,
                     port=117,
                     display_name="Set Velocity"
-                )                
+                ),
+                "OperateBrake": CommandConfig(
+                    data_type=OperateRemoteDevice_1_0,
+                    server_node_id=28,
+                    port=121,
+                    display_name="Operate Brake"
+                )                                               
             }
         )
 

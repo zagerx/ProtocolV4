@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'MotorAsst/ui/main.ui'
+# Form implementation generated from reading ui file 'main.ui'
 #
 # Created by: PyQt6 UI code generator 6.8.1
 #
@@ -56,7 +56,7 @@ class Ui_MainWindow(object):
         self.radioButton_5.setObjectName("radioButton_5")
         self.verticalLayout_2.addWidget(self.radioButton_5)
         self.verticalLayoutWidget_3 = QtWidgets.QWidget(parent=self.centralwidget)
-        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(250, 25, 101, 81))
+        self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(250, 25, 101, 86))
         self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -197,6 +197,18 @@ class Ui_MainWindow(object):
         self.lineEdit_7_1.setObjectName("lineEdit_7_1")
         self.horizontalLayout_7_1.addWidget(self.lineEdit_7_1)
         self.horizontalLayout_7.addLayout(self.horizontalLayout_7_1)
+        self.verticalLayoutWidget_6 = QtWidgets.QWidget(parent=self.centralwidget)
+        self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(440, 240, 101, 56))
+        self.verticalLayoutWidget_6.setObjectName("verticalLayoutWidget_6")
+        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_6)
+        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
+        self.radioButton_6 = QtWidgets.QRadioButton(parent=self.verticalLayoutWidget_6)
+        self.radioButton_6.setObjectName("radioButton_6")
+        self.verticalLayout_6.addWidget(self.radioButton_6)
+        self.radioButton_7 = QtWidgets.QRadioButton(parent=self.verticalLayoutWidget_6)
+        self.radioButton_7.setObjectName("radioButton_7")
+        self.verticalLayout_6.addWidget(self.radioButton_7)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -232,3 +244,5 @@ class Ui_MainWindow(object):
         self.label_6_2.setText(_translate("MainWindow", "右论速度:"))
         self.label_7_2.setText(_translate("MainWindow", "左轮里程:"))
         self.label_7_1.setText(_translate("MainWindow", "右轮里程:"))
+        self.radioButton_6.setText(_translate("MainWindow", "抱闸"))
+        self.radioButton_7.setText(_translate("MainWindow", "抱闸解除"))

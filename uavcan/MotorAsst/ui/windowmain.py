@@ -38,7 +38,11 @@ class MainWindow(QMainWindow):
             lambda checked: self._on_operation_mode_changed(checked, "start"))
         self.ui.radioButton_5.toggled.connect(
             lambda checked: self._on_operation_mode_changed(checked, "stop"))
-                
+        # 连接刹车控制信号
+        self.ui.radioButton_6.toggled.connect(
+            lambda checked: self._on_operation_mode_changed(checked, "brake_lock"))
+        self.ui.radioButton_7.toggled.connect(
+            lambda checked: self._on_operation_mode_changed(checked, "brake_unlock"))                
     def _init_status_group(self):
         """初始化状态显示组件"""
         self.ui.lineEdit_5_1.setReadOnly(True)
