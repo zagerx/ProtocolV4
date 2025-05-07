@@ -7,6 +7,7 @@ from MotorAsst.drivers.can.monitors.commandmonitors import CommandMonitor
 from uavcan.si.unit.velocity import Scalar_1_0
 import numpy as np
 from dinosaurs.peripheral import OperateRemoteDevice_1_0
+from dinosaurs.sensor.binarysignal import BinarySignal_2_0
 
 @dataclass
 class CanConfig:
@@ -61,7 +62,14 @@ class DriverConfig:
                     monitor_class=CommandMonitor,
                     display_name="Odometry",
                     priority=0
-                )
+                ),
+                MonitorConfig(
+                    data_type=BinarySignal_2_0,
+                    port=1004,  # 与sub_binarysignal.py一致
+                    monitor_class=CommandMonitor,
+                    display_name="BinarySignal",
+                    priority=1
+                )                
             ],
             commands={
                 "MotorEnable": CommandConfig(

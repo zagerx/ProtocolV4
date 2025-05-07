@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         
         # 中频数据UI更新（20ms间隔）
         self._mid_freq_timer = QTimer()
-        # self._mid_freq_timer.timeout.connect(self._update_mid_freq_ui)
+        self._mid_freq_timer.timeout.connect(self._update_mid_freq_ui)
         self._mid_freq_timer.start(20)  # ≈50Hz刷新
         
         # 低频数据使用信号槽直连
@@ -78,10 +78,13 @@ class MainWindow(QMainWindow):
         if priority == 2:
             # 低频数据
             self._update_low_freq_ui(name,raw_data)
-        # if priority == 1:
-            # 中频数据
-            # self._mid_freq_buffer.append(event)
-            # self._last_update_time[name] = now
+        elif priority == 1:
+            # 中频数据 (BinarySignal)
+            self._mid_freq_buffer.append({
+                "name": name,
+                "data": raw_data,
+                "timestamp": now
+            })
         else:
             #高频数据
             self._high_freq_buffer.append({
@@ -106,21 +109,14 @@ class MainWindow(QMainWindow):
             if data_type == "odometry":
                 self._handle_odometry(raw_data)
 
+    def _update_mid_freq_ui(self):
+        """处理中频数据（binarysignal等）"""
+        if not self._mid_freq_buffer:
+            return
 
-    # def _update_mid_freq_ui(self):
-    #     """处理中频数据（temperature/voltage/current）"""
-    #     if not self._mid_freq_buffer:
-    #         return
-
-    #     # 聚合显示（示例：温度显示最近值+最大值）
-    #     temp_values = [
-    #         e.data["value"] for e in self._mid_freq_buffer 
-    #         if e.name == "temperature"
-    #     ]
-    #     if temp_values:
-    #         self._widget_mapping["temperature"].setText(
-    #             f"当前: {temp_values[-1]:.1f}°C\n峰值: {max(temp_values):.1f}°C"
-    #         )
+        for item in self._mid_freq_buffer:
+            if item["name"].lower() == "binarysignal":
+                self._handle_binary_signal(item["data"])
 
     ''' 
     心跳数据数据原型:
@@ -166,14 +162,18 @@ class MainWindow(QMainWindow):
                 f"v_r:{msg.current_velocity[1].meter_per_second:.3f},"
                 f"o_l:{msg.odometry[0].meter:.3f},"
                 f"o_r:{msg.odometry[1].meter:.3f}\n"
-            )
-            
+            ) 
             # 写入文件（追加模式）
             with open("./MotorAsst/output/odom.csv", "a", encoding="utf-8") as f:
                 f.write(csv_line)            
         except Exception as e:
             print(f"里程计处理异常: {e}")
 
+    def _handle_binary_signal(self, raw_data):
+        """高频处理二进制信号"""
+        msg, _ = raw_data
+        device_name = bytes(msg.name.value.tobytes()).decode('utf-8').rstrip('\x00')
+        # print(f"[高频] 二进制信号 - 设备: {device_name}, 状态: {msg.state}")
 
     def _setup_button_connections(self):
         """集中管理按钮信号连接"""
