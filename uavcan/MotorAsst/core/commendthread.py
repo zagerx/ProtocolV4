@@ -35,11 +35,11 @@ class CommandThread:
         if command_name == "OperateBrake":
             return await self._send_brake_command(params)
         
-        if command_name == "MotorEnable":
-            if params.get("enable_state", 0) == 1:
-                self._logger.info("电机使能")
-            else:
-                await self._stop_velocity_loop()
+        # if command_name == "MotorEnable":
+        #     if params.get("enable_state", 0) == 1:
+        #         self._logger.info("电机使能")
+        #     else:
+        #         await self._stop_velocity_loop()
 
         return await self._send_single_command(command_name, params)
 

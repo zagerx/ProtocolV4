@@ -12,6 +12,8 @@ class MainWindow(QMainWindow):
     主窗口类，封装UI界面和基本功能
     """
     operationModeChanged = pyqtSignal(str)  # 添加这行
+    targetValueRequested = pyqtSignal(dict)  # 新增目标值信号
+    targetClearRequested = pyqtSignal()  # 新增清除信号
 
     def __init__(self):
         super().__init__()
@@ -30,6 +32,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("电机监控系统")
         # 状态组
         self._init_status_group()
+        # 连接按钮信号
+        self._setup_button_connections()        
         # 设置互斥组
         self.ui.radioButton_4.setAutoExclusive(True)
         self.ui.radioButton_5.setAutoExclusive(True)
@@ -170,6 +174,26 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"里程计处理异常: {e}")
 
+
+    def _setup_button_connections(self):
+        """集中管理按钮信号连接"""
+        self.ui.pushButton.clicked.connect(self._on_target_set_clicked)
+        # 后续按钮可在此添加:
+        self.ui.pushButton_3.clicked.connect(self._on_target_clear_clicked)  # 新增连接
+    def _on_target_clear_clicked(self):
+        """处理目标值清除"""
+        self.targetClearRequested.emit()
+
+    def _on_target_set_clicked(self):
+        """处理目标值设置"""
+        try:
+            values = {
+                "left": self.ui.doubleSpinBox.value(),
+                "right": self.ui.doubleSpinBox_2.value()
+            }
+            self.targetValueRequested.emit(values)
+        except ValueError as e:
+            print(f"目标值设置错误: {e}")
 
     def _on_operation_mode_changed(self, checked, mode):
         """操作模式变化处理"""

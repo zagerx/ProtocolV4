@@ -25,16 +25,16 @@ def _handle_operation_mode(mode):
     logging.info(f"Operation mode changed to: {mode}")
     if mode == "start":
         # 执行启动指令
-        print("start motor")
+        # print("start motor")
         asyncio.create_task(
-            command_thread.send_command("MotorEnable", {"enable_state": 1})
+            command_thread.send_command("MotorEnable", {"enable_state": 0})
         )
         pass
     elif mode == "stop":
         # 执行停止指令
-        print("stop motor")
+        # print("stop motor")
         asyncio.create_task(
-            command_thread.send_command("MotorEnable", {"enable_state": 0}))        
+            command_thread.send_command("MotorEnable", {"enable_state": 1}))        
         pass
     elif mode == "brake_lock":
         asyncio.create_task(
@@ -51,6 +51,28 @@ def _handle_operation_mode(mode):
             })
         )
 
+
+def _handle_target_value(values):
+    """处理目标速度设置"""
+    logging.info(f"设置目标速度: {values}")
+    if command_thread:
+        asyncio.create_task(
+            command_thread.start_velocity_loop(
+                initial_velocity={"left": -0.03, "right": 0.03},
+                interval_ms = 300,
+                duration_per_direction=8.0,
+                cycles= 100
+            )
+        )
+
+def _handle_target_clear():
+    """停止速度指令发送"""
+    logging.info("停止速度指令")
+    if command_thread:
+        asyncio.create_task(
+            command_thread._stop_velocity_loop()
+        )
+
 async def async_main():
     global command_thread
     """主业务逻辑协程"""
@@ -63,6 +85,8 @@ async def async_main():
     window = MainWindow()
 
     window.operationModeChanged.connect(_handle_operation_mode)
+    window.targetValueRequested.connect(_handle_target_value)
+    window.targetClearRequested.connect(_handle_target_clear)  # 新增信号连接
 
     if not os.path.exists("./MotorAsst/output/odom.csv"):
         with open("./MotorAsst/output/odom.csv", "w", encoding="utf-8") as f:
