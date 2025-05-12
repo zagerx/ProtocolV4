@@ -1,15 +1,23 @@
 """
-通用命令执行线程，支持速度循环控制
+命令执行线程
+功能:
+1. 管理电机控制命令的执行
+2. 实现速度循环控制
+3. 处理刹车等特殊命令
 """
 
 import asyncio
 import logging
 from typing import Dict, Any, Optional
+
+# === 自定义模块导入 ===
 from MotorAsst.drivers.can.transport import CANNodeService
 from MotorAsst.config.configdrivers import DriverConfig
 
 class CommandThread:
+
     def __init__(self, node_service: CANNodeService, commands_config: Dict[str, Any]):
+        """初始化命令线程"""
         self.node_service = node_service
         self.commands_config = commands_config
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -22,7 +30,14 @@ class CommandThread:
         self._logger.info("命令线程已启动")
 
     async def send_command(self, command_name: str, params: Dict) -> bool:
-        """发送命令（统一接口）"""
+        """
+        发送命令统一接口
+        参数:
+            command_name: 命令名称
+            params: 命令参数字典
+        返回:
+            命令执行结果(bool)
+        """
         if not self._active:
             self._logger.warning("命令线程未启动")
             return False
@@ -31,15 +46,8 @@ class CommandThread:
             self._logger.error(f"未知命令: {command_name}")
             return False
 
-        # 特殊处理使能命令
         if command_name == "OperateBrake":
             return await self._send_brake_command(params)
-        
-        # if command_name == "MotorEnable":
-        #     if params.get("enable_state", 0) == 1:
-        #         self._logger.info("电机使能")
-        #     else:
-        #         await self._stop_velocity_loop()
 
         return await self._send_single_command(command_name, params)
 
@@ -74,18 +82,6 @@ class CommandThread:
             except asyncio.CancelledError:
                 self._logger.info("速度循环控制已停止")
             self._velocity_loop_task = None
-
-    async def _send_brake_command(self, params: Dict) -> bool:
-        """执行刹车操作命令"""
-        try:
-            return await self._send_single_command("OperateBrake", {
-                "method": params.get("method", 0),
-                "name": params.get("name", "m-brake"),
-                "param": params.get("param", "")
-            })
-        except Exception as e:
-            self._logger.error(f"刹车命令执行失败: {e}")
-            return False
 
     async def _velocity_control_loop(self,
                                    initial_velocity: Dict[str, float],
@@ -125,7 +121,19 @@ class CommandThread:
             await self._send_single_command("SetVelocity", 
                 {k: 0.0 for k in current_velocity})
             self._logger.info("速度循环控制完成")
-            
+
+    async def _send_brake_command(self, params: Dict) -> bool:
+        """执行刹车操作命令"""
+        try:
+            return await self._send_single_command("OperateBrake", {
+                "method": params.get("method", 0),
+                "name": params.get("name", "m-brake"),
+                "param": params.get("param", "")
+            })
+        except Exception as e:
+            self._logger.error(f"刹车命令执行失败: {e}")
+            return False
+
     async def _send_single_command(self, command_name: str, params: Dict) -> bool:
         """执行单次命令"""
         config = self.commands_config[command_name]  # 直接访问字典

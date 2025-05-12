@@ -8,6 +8,7 @@ from uavcan.si.unit.velocity import Scalar_1_0
 import numpy as np
 from dinosaurs.peripheral import OperateRemoteDevice_1_0
 from dinosaurs.sensor.binarysignal import BinarySignal_2_0
+from dinosaurs.actuator.wheel_motor import Status_1_0  # 添加这行导入
 
 @dataclass
 class CanConfig:
@@ -69,7 +70,14 @@ class DriverConfig:
                     monitor_class=CommandMonitor,
                     display_name="BinarySignal",
                     priority=1
-                )                
+                ),
+                MonitorConfig(
+                    data_type=Status_1_0,
+                    port=1101,  # 与sub_motorstatus.py一致
+                    monitor_class=CommandMonitor,
+                    display_name="MotorStatus",
+                    priority=1  # 中频数据
+                )                                
             ],
             commands={
                 "MotorEnable": CommandConfig(
@@ -89,7 +97,7 @@ class DriverConfig:
                     server_node_id=28,
                     port=121,
                     display_name="Operate Brake"
-                )                                               
+                )
             }
         )
 
