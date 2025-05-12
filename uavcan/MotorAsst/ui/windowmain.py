@@ -182,7 +182,13 @@ class MainWindow(QMainWindow):
         msg, _ = raw_data
         device_name = bytes(msg.name.value.tobytes()).decode('utf-8').rstrip('\x00')
         # print(f"[高频] 二进制信号 - 设备: {device_name}, 状态: {msg.state}")
-
+        if msg.state == 0:
+            self.ui.lineEdit_3.setText("抱闸中")
+        elif msg.state == 1:
+            self.ui.lineEdit_3.setText("抱闸解除")
+        else:
+            self.ui.lineEdit_3.setText("未知状态")  # 异常状态处理
+            
     def _handle_motor_status(self, raw_data):
         """电机状态处理"""
         try:
@@ -190,8 +196,19 @@ class MainWindow(QMainWindow):
             # print(f"{msg.driver_input_current.ampere:.3f}A")
             # print(f"{msg.voltage.volt:.3f}V")
             # print(f"{msg.driver_max_temperature.kelvin:.1f}K")
-            # print(str(msg.mode))
-            # print(str(msg.status))
+            # print(f"Mode: {msg.mode}")
+            # print(f"Status: {msg.status}")
+            if msg.status == 0:
+                self.ui.lineEdit_2.setText("初始化")
+            elif msg.status == 1:
+                self.ui.lineEdit_2.setText("停止")
+            elif msg.status == 2:
+                self.ui.lineEdit_2.setText("运行")
+            elif msg.status == 3:
+                self.ui.lineEdit_2.setText("抱闸")
+            else:
+                self.ui.lineEdit_2.setText("未知状态")
+
         except Exception as e:
             print(f"电机状态处理异常: {e}")
 
