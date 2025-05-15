@@ -25,6 +25,8 @@ class CommandMonitor(BaseMonitor):
             )
             if result:
                 msg, transfer = result
+                if (transfer.source_node_id != 28):
+                    return False, None
                 return (True, result)
             return False, None
         except Exception as e:

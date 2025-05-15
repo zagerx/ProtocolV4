@@ -19,7 +19,7 @@ import asyncio
 async def sub_heart_process() -> None:
     # 初始化 CAN 接口和传输层
     media = SocketCANMedia("can1", mtu=8)
-    transport = CANTransport(media, local_node_id=28)
+    transport = CANTransport(media, local_node_id=100)
     
     # 创建节点（显式启动）
     node = make_node(

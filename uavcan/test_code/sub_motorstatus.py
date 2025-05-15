@@ -27,7 +27,7 @@ class MotorStatusLogger:
 async def sub_motorstatus_process():
     logger = MotorStatusLogger()
     media = SocketCANMedia("can1", mtu=8)
-    transport = CANTransport(media, local_node_id=28)
+    transport = CANTransport(media, local_node_id=100)
     
     node = make_node(
         transport=transport,
