@@ -71,14 +71,20 @@ def _handle_target_value(values: dict) -> None:
     """处理目标速度设置信号"""
     logging.info(f"设置目标速度: {values}")
     if command_thread:
+        # 单次发送模式
         asyncio.create_task(
             command_thread.start_velocity_loop(
-                initial_velocity={"left": -0.03, "right": 0.03},
-                interval_ms=300,
-                duration_per_direction=8.0,
-                cycles=100
+                initial_velocity={"left": values["left"], "right": values["right"]}
             )
-        )
+        )        
+        # asyncio.create_task(            
+        #     command_thread.start_velocity_loop(
+        #         initial_velocity={"left": values["left"], "right": values["right"]},  # 使用UI传入的值
+        #         interval_ms=300,
+        #         duration_per_direction=8.0,
+        #         cycles=100
+        #     )
+        # )
 
 def _handle_target_clear() -> None:
     """处理目标清除信号"""

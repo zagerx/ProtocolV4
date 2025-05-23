@@ -114,7 +114,7 @@
 #define dinosaurs_actuator_wheel_motor_SetProtectParameter_2_0_FIXED_PORT_ID_        122U
 #define dinosaurs_actuator_control_MotionControl_1_0_FIXED_PORT_ID_                  123U
 #define dinosaurs_actuator_parameter_MotionModelParameters_1_0_FIXED_PORT_ID_        124U
-
+#define dinosaurs_actuator_wheel_motor_PidParameter_1_0_FIXED_PORT_ID_               125U
 
 #define dinosaurs_actuator_ordinary_motor_SetAngularVelocity_1_0_FIXED_PORT_ID_      130U
 #define dinosaurs_actuator_ordinary_motor_SetPower_1_0_FIXED_PORT_ID_                131U

@@ -130,6 +130,7 @@ uint16 actuator_wheel_motor_SetMode_2_0_ID = 119
 uint16 actuator_wheel_motor_SetPiParameter_2_0_ID = 120
 uint16 actuator_wheel_motor_SetExternalParameter_2_0_ID = 121
 uint16 actuator_wheel_motor_SetProtectParameter_2_0_ID = 122
+uint16 dinosaurs_actuator_wheel_motor_PidParameter_1_0_FIXED_PORT_ID_ = 125
 
 uint16 actuator_ordinary_motor_SetAngularVelocity_1_0_ID = 130
 uint16 actuator_ordinary_motor_SetPower_1_0_ID = 131

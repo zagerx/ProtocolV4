@@ -42,7 +42,7 @@ class CommandThread:
 
     async def start_velocity_loop(self, 
                                 initial_velocity: Dict[str, float],
-                                interval_ms: int = 200,
+                                interval_ms: int = None,  # 改为可选参数
                                 duration_per_direction: float = 5.0,
                                 cycles: int = 20):
         """
@@ -53,14 +53,19 @@ class CommandThread:
         :param cycles: 循环次数
         """
         await self._stop_velocity_loop()
-        self._velocity_loop_task = asyncio.create_task(
-            self._velocity_control_loop(
-                initial_velocity,
-                interval_ms,
-                duration_per_direction,
-                cycles
+        if interval_ms is None:  # 单次模式
+            self._velocity_loop_task = asyncio.create_task(
+                self._send_single_velocity(initial_velocity)
             )
-        )
+        else:  # 循环模式
+            self._velocity_loop_task = asyncio.create_task(
+                self._velocity_control_loop(
+                    initial_velocity,
+                    interval_ms,
+                    duration_per_direction,
+                    cycles
+                )
+            )
 
     async def _stop_velocity_loop(self):
         """停止速度循环控制"""
@@ -71,6 +76,14 @@ class CommandThread:
             except asyncio.CancelledError:
                 self._logger.info("速度循环控制已停止")
             self._velocity_loop_task = None
+
+    async def _send_single_velocity(self, velocity: Dict[str, float]):
+        """发送单次速度命令"""
+        try:
+            await self.executor.send("SetVelocity", velocity)
+            self._logger.info(f"速度设置完成: {velocity}")
+        except Exception as ex:
+            self._logger.error(f"速度设置失败: {ex}")
 
     async def _velocity_control_loop(self,
                                    initial_velocity: Dict[str, float],

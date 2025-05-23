@@ -228,9 +228,11 @@ class MainWindow(QMainWindow):
     def _on_target_set_clicked(self):
         """目标值设置事件"""
         try:
+            left_val = float(self.ui.lineEdit.text())
+            right_val = float(self.ui.lineEdit.text())  # 假设使用同一个文本框值
             values = {
-                "left": self.ui.doubleSpinBox.value(),
-                "right": self.ui.doubleSpinBox_2.value()
+                "left": left_val,
+                "right": right_val
             }
             self.targetValueRequested.emit(values)
         except ValueError as e:
