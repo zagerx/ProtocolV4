@@ -17,6 +17,7 @@ class MainWindow(QMainWindow):
     operationModeChanged = pyqtSignal(str)    # 操作模式变更信号
     targetValueRequested = pyqtSignal(dict)   # 目标值设置信号 
     targetClearRequested = pyqtSignal()      # 目标值清除信号
+    pidParamsRequested = pyqtSignal(dict)  # 新增PID参数信号
 
     def __init__(self):
         """初始化主窗口"""
@@ -57,7 +58,14 @@ class MainWindow(QMainWindow):
         """初始化状态显示组件"""
         self.ui.lineEdit_5_1.setReadOnly(True)  # 节点ID显示框设为只读
         self.ui.radioButton_5.setChecked(True)  # 默认选择"停止"模式
-
+        # 设置doubleSpinBox_2的小数位数
+        self.ui.doubleSpinBox.setDecimals(6)  # 设置为6位小数
+        self.ui.doubleSpinBox.setSingleStep(0.000001)  # 设置步进值
+        self.ui.doubleSpinBox_2.setDecimals(6)  # 设置为6位小数
+        self.ui.doubleSpinBox_2.setSingleStep(0.000001)  # 设置步进值
+        self.ui.doubleSpinBox_3.setDecimals(6)  # 设置为6位小数
+        self.ui.doubleSpinBox_3.setSingleStep(0.000001)  # 设置步进值
+        
     def _init_timers(self):
         """
         初始化多级刷新定时器
@@ -223,8 +231,21 @@ class MainWindow(QMainWindow):
         """设置按钮信号连接"""
         self.ui.pushButton.clicked.connect(self._on_target_set_clicked)
         self.ui.pushButton_3.clicked.connect(self._on_target_clear_clicked)
+        self.ui.pushButton_2.clicked.connect(self._on_pid_set_clicked)  # 新增PID设置按钮连接
 
     # ==================== 事件处理器 ====================
+    def _on_pid_set_clicked(self):
+        """PID参数设置事件"""
+        try:
+            params = {
+                "kp": self.ui.doubleSpinBox.value(),
+                "ki": self.ui.doubleSpinBox_2.value(), 
+                "kd": self.ui.doubleSpinBox_3.value()
+            }
+            self.pidParamsRequested.emit(params)  # 发射信号
+        except Exception as e:
+            print(f"获取PID参数错误: {e}")
+
     def _on_target_set_clicked(self):
         """目标值设置事件"""
         try:

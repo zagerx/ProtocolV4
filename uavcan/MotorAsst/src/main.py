@@ -66,6 +66,20 @@ def _handle_operation_mode(mode: str) -> None:
                 "method": OperateRemoteDevice_1_0.Request.OPEN
             })
         )
+def _handle_pid_params(params: dict) -> None:
+    """处理PID参数设置信号"""
+    logging.info(f"设置PID参数: {params}")
+    if not command_thread:
+        return
+        
+    pid_params = {
+        "pid_params": [params["kp"], params["ki"], 0.0, params["kd"]],  # kc设为0
+        "reserved": [0.0] * 12  # 预留参数
+    }
+    
+    asyncio.create_task(
+        command_thread.send_command("SetPidParams", pid_params)
+    )
 
 def _handle_target_value(values: dict) -> None:
     """处理目标速度设置信号"""
@@ -107,6 +121,7 @@ async def async_main() -> None:
     window.operationModeChanged.connect(_handle_operation_mode)
     window.targetValueRequested.connect(_handle_target_value)
     window.targetClearRequested.connect(_handle_target_clear)
+    window.pidParamsRequested.connect(_handle_pid_params)  # 连接信号
 
     # 初始化数据记录文件
     if not os.path.exists("./MotorAsst/output/odom.csv"):
