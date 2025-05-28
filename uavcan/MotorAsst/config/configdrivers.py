@@ -10,6 +10,7 @@ from dinosaurs.peripheral import OperateRemoteDevice_1_0
 from dinosaurs.sensor.binarysignal import BinarySignal_2_0
 from dinosaurs.actuator.wheel_motor import Status_1_0  # 添加这行导入
 from dinosaurs.actuator.wheel_motor import PidParameter_1_0  # 添加这行导入
+from dinosaurs.actuator.wheel_motor import SetMode_2_0  # 添加这行导入
 
 @dataclass
 class CanConfig:
@@ -104,6 +105,12 @@ class DriverConfig:
                     server_node_id=28,
                     port=125,
                     display_name="Set PID Parameters"
+                ),                
+                "SetMode": CommandConfig(
+                    data_type=SetMode_2_0,
+                    server_node_id=28,
+                    port=119,
+                    display_name="Set Motor Mode"
                 ),                
             }
         )

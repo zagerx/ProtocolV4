@@ -18,6 +18,7 @@ class MainWindow(QMainWindow):
     targetValueRequested = pyqtSignal(dict)   # 目标值设置信号 
     targetClearRequested = pyqtSignal()      # 目标值清除信号
     pidParamsRequested = pyqtSignal(dict)  # 新增PID参数信号
+    controlModeChanged = pyqtSignal(str)  # 新增控制模式信号
 
     def __init__(self):
         """初始化主窗口"""
@@ -52,6 +53,13 @@ class MainWindow(QMainWindow):
             lambda checked: self._on_operation_mode_changed(checked, "brake_lock"))
         self.ui.radioButton_7.toggled.connect(
             lambda checked: self._on_operation_mode_changed(checked, "brake_unlock"))                
+        # 连接控制模式信号
+        self.ui.radioButton.toggled.connect(
+            lambda checked: self._on_control_mode_changed(checked, "open_loop"))
+        self.ui.radioButton_2.toggled.connect(
+            lambda checked: self._on_control_mode_changed(checked, "velocity"))
+        self.ui.radioButton_3.toggled.connect(
+            lambda checked: self._on_control_mode_changed(checked, "position"))
 
     # ==================== 初始化方法 ====================
     def _init_status_group(self):
@@ -268,3 +276,7 @@ class MainWindow(QMainWindow):
         if checked:
             self.operationModeChanged.emit(mode)
             # self.ui.lineEdit_5_3.setText(mode.capitalize())
+    def _on_control_mode_changed(self, checked, mode):
+        """控制模式变更事件"""
+        if checked:
+            self.controlModeChanged.emit(mode)            

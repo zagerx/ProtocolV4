@@ -80,7 +80,7 @@
      <item>
       <widget class="QRadioButton" name="radioButton">
        <property name="text">
-        <string>开环模式</string>
+        <string>力矩模式</string>
        </property>
       </widget>
      </item>

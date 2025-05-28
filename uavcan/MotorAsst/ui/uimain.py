@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file './MotorAsst/ui/main.ui'
+# Form implementation generated from reading ui file 'main.ui'
 #
 # Created by: PyQt6 UI code generator 6.8.1
 #
@@ -252,7 +252,7 @@ class Ui_MainWindow(object):
         self.comboBox.setItemText(1, _translate("MainWindow", "4000000"))
         self.comboBox.setItemText(2, _translate("MainWindow", "9600"))
         self.comboBox_2.setItemText(0, _translate("MainWindow", "Com"))
-        self.radioButton.setText(_translate("MainWindow", "开环模式"))
+        self.radioButton.setText(_translate("MainWindow", "力矩模式"))
         self.radioButton_2.setText(_translate("MainWindow", "速度模式"))
         self.radioButton_3.setText(_translate("MainWindow", "位置模式"))
         self.radioButton_4.setText(_translate("MainWindow", "启动"))

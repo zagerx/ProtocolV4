@@ -52,7 +52,13 @@ class CommandExecutor:
         """构建DSDL请求对象"""
         if command_name == "SetVelocity":
             return DriverConfig.build_velocity_request(params)
+        elif command_name == "SetMode":
+            from uavcan.si.unit.velocity import Scalar_1_0 as VelocityScalar
+            from uavcan.si.unit.acceleration import Scalar_1_0 as AccelerationScalar
+            return self.config[command_name].data_type.Request(
+                mode=params["mode"],
+                max_velocity=VelocityScalar(params["max_velocity"]),
+                acceleration=AccelerationScalar(params["acceleration"]),
+                deceleration=AccelerationScalar(params["deceleration"])
+            )
         return self.config[command_name].data_type.Request(**params)
-
-
-

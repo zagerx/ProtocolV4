@@ -33,6 +33,7 @@ from MotorAsst.config import ConfigManager
 # === DSDL消息类型 ===
 # from dinosaurs.actuator.wheel_motor import SetTargetValue_2_0
 from dinosaurs.peripheral import OperateRemoteDevice_1_0
+from dinosaurs.actuator.wheel_motor import SetMode_2_0  # 添加这行导入
 
 # ===== 全局状态 =====
 command_thread = None  # 命令线程全局引用
@@ -105,6 +106,33 @@ def _handle_target_clear() -> None:
     logging.info("停止速度指令")
     if command_thread:
         asyncio.create_task(command_thread._stop_velocity_loop())
+def _handle_control_mode(mode: str) -> None:
+    """处理控制模式切换信号"""
+    logging.info(f"控制模式变更: {mode}")
+    if not command_thread:
+        return
+
+    if mode == "open_loop":
+        asyncio.create_task(
+            command_thread.send_command("SetMode", {
+                "mode": SetMode_2_0.Request.CURRENT_MODE,
+                "max_velocity": 5.0,  # 最大速度 (m/s)
+                "acceleration": 1.0,  # 加速度 (m/s²)
+                "deceleration": 1.0   # 减速度 (m/s²)
+            })
+        )
+    elif mode == "velocity":
+        asyncio.create_task(
+            command_thread.send_command("SetMode", {
+                "mode": SetMode_2_0.Request.SPEED_MODE,
+                "max_velocity": 5.0,  # 最大速度 (m/s)
+                "acceleration": 1.0,  # 加速度 (m/s²)
+                "deceleration": 1.0   # 减速度 (m/s²)
+            })
+        )
+    elif mode == "position":
+        logging.warning("位置模式暂未实现")
+
 
 # ===== 主业务协程 =====
 async def async_main() -> None:
@@ -122,6 +150,7 @@ async def async_main() -> None:
     window.targetValueRequested.connect(_handle_target_value)
     window.targetClearRequested.connect(_handle_target_clear)
     window.pidParamsRequested.connect(_handle_pid_params)  # 连接信号
+    window.controlModeChanged.connect(_handle_control_mode)  # 新增控制模式信号连接
 
     # 初始化数据记录文件
     if not os.path.exists("./MotorAsst/output/odom.csv"):
