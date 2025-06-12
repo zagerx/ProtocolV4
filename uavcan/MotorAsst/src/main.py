@@ -131,6 +131,14 @@ def _handle_control_mode(mode: str) -> None:
             })
         )
     elif mode == "position":
+        asyncio.create_task(
+            command_thread.send_command("SetMode", {
+                "mode": SetMode_2_0.Request.POSITION_MODE,
+                "max_velocity": 5.0,  # 最大速度 (m/s)
+                "acceleration": 1.0,  # 加速度 (m/s²)
+                "deceleration": 1.0   # 减速度 (m/s²)
+            })
+        )
         logging.warning("位置模式暂未实现")
 
 
