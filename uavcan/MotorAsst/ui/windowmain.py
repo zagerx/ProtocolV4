@@ -66,14 +66,26 @@ class MainWindow(QMainWindow):
         """初始化状态显示组件"""
         self.ui.lineEdit_5_1.setReadOnly(True)  # 节点ID显示框设为只读
         self.ui.radioButton_5.setChecked(True)  # 默认选择"停止"模式
-        # 设置doubleSpinBox_2的小数位数
-        self.ui.doubleSpinBox.setDecimals(6)  # 设置为6位小数
-        self.ui.doubleSpinBox.setSingleStep(0.000001)  # 设置步进值
-        self.ui.doubleSpinBox_2.setDecimals(6)  # 设置为6位小数
-        self.ui.doubleSpinBox_2.setSingleStep(0.000001)  # 设置步进值
-        self.ui.doubleSpinBox_3.setDecimals(6)  # 设置为6位小数
-        self.ui.doubleSpinBox_3.setSingleStep(0.000001)  # 设置步进值
+    # ==== 关键修改：设置显示宽度和范围 ====
+    # 获取所有 doubleSpinBox 组件
+        spin_boxes = [
+            self.ui.doubleSpinBox, 
+            self.ui.doubleSpinBox_2, 
+            self.ui.doubleSpinBox_3
+        ]
         
+        for spin_box in spin_boxes:
+            # 设置小数位数和步进值
+            spin_box.setDecimals(6)
+            spin_box.setSingleStep(0.000001)
+            
+            # 移除数值范围限制
+            spin_box.setMinimum(-float('inf'))
+            spin_box.setMaximum(float('inf'))
+            
+            # 设置最小宽度以确保显示完整数值
+            spin_box.setMinimumWidth(100)  # 可根据需要调整
+
     def _init_timers(self):
         """
         初始化多级刷新定时器
