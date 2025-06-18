@@ -19,11 +19,25 @@ class MainWindow(QMainWindow):
     targetClearRequested = pyqtSignal()      # 目标值清除信号
     pidParamsRequested = pyqtSignal(dict)  # 新增PID参数信号
     controlModeChanged = pyqtSignal(str)  # 新增控制模式信号
+    liftControlRequested = pyqtSignal(str)  #连接顶升控制信号
+
 
     def __init__(self):
         """初始化主窗口"""
         super().__init__()
         
+        # 添加 MovableAddons 状态映射
+        self.movable_state_names = {
+            0: "初始化",
+            1: "找零中",
+            2: "零点",
+            3: "上升中",
+            4: "顶点",
+            5: "下降中",
+            6: "中间状态",
+            255: "异常"
+        }
+
         # ---------- UI初始化 ----------
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -167,6 +181,8 @@ class MainWindow(QMainWindow):
                 self._handle_binary_signal(item["data"])
             elif name_lower == "motorstatus":
                 self._handle_motor_status(item["data"])
+            elif name_lower == "movableaddons":
+                self._handle_movable_addons(item["data"])
 
     def _update_low_freq_ui(self, name, raw_data):
         """处理并更新低频数据UI"""
@@ -180,6 +196,26 @@ class MainWindow(QMainWindow):
             print(f"低频数据处理异常 ({name}): {e}")
 
     # ==================== 数据处理器 ====================
+    def _handle_movable_addons(self, raw_data):
+        """处理 MovableAddons 协议数据"""
+        try:
+            msg, _ = raw_data
+            # 提取设备信息
+            device_name = msg.name.value.tobytes().decode('utf-8').rstrip('\x00')
+            state_value = msg.state.current_state
+            
+            # 获取状态名称
+            state_name = self.movable_state_names.get(
+                state_value, 
+                f"未知状态({state_value})"
+            )
+            
+            # 更新 UI
+            self.ui.lineEdit_4.setText(f"{state_name}")
+            
+        except Exception as e:
+            print(f"MovableAddons 处理异常: {e}")
+
     def _handle_odometry(self, raw_data):
         """里程计数据处理"""
         try:
@@ -252,7 +288,8 @@ class MainWindow(QMainWindow):
         self.ui.pushButton.clicked.connect(self._on_target_set_clicked)
         self.ui.pushButton_3.clicked.connect(self._on_target_clear_clicked)
         self.ui.pushButton_2.clicked.connect(self._on_pid_set_clicked)  # 新增PID设置按钮连接
-
+        self.ui.pushButton_4.clicked.connect(self._on_brake_lock_clicked)
+        self.ui.pushButton_5.clicked.connect(self._on_brake_unlock_clicked)
     # ==================== 事件处理器 ====================
     def _on_pid_set_clicked(self):
         """PID参数设置事件"""
@@ -292,3 +329,12 @@ class MainWindow(QMainWindow):
         """控制模式变更事件"""
         if checked:
             self.controlModeChanged.emit(mode)            
+
+    # ==== 新增事件处理器 ====
+    def _on_brake_lock_clicked(self):
+        """抱闸锁定按钮点击事件"""
+        self.liftControlRequested.emit("rising")
+        
+    def _on_brake_unlock_clicked(self):
+        """抱闸解锁按钮点击事件"""
+        self.liftControlRequested.emit("falling")

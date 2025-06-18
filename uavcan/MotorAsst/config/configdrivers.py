@@ -11,6 +11,7 @@ from dinosaurs.sensor.binarysignal import BinarySignal_2_0
 from dinosaurs.actuator.wheel_motor import Status_1_0  # 添加这行导入
 from dinosaurs.actuator.wheel_motor import PidParameter_1_0  # 添加这行导入
 from dinosaurs.actuator.wheel_motor import SetMode_2_0  # 添加这行导入
+from dinosaurs.peripheral import MovableAddons_1_0
 
 @dataclass
 class CanConfig:
@@ -50,8 +51,15 @@ class DriverConfig:
     @classmethod
     def default(cls):
         return cls(
-            can=CanConfig(),
+            can=CanConfig(),            
             monitors=[
+                MonitorConfig(
+                    data_type=MovableAddons_1_0,
+                    port=1022,  # 与 canard_if.c 中的端口号一致
+                    monitor_class=CommandMonitor,
+                    display_name="MovableAddons",
+                    priority=1  # 中频数据
+                ),                
                 MonitorConfig(
                     data_type=Heartbeat_1_0,
                     port=7509,

@@ -64,9 +64,36 @@ def _handle_operation_mode(mode: str) -> None:
     elif mode == "brake_unlock":
         asyncio.create_task(
             command_thread.send_command("OperateBrake", {
-                "method": OperateRemoteDevice_1_0.Request.OPEN
+                "method": OperateRemoteDevice_1_0.Request.OPEN,
+                "name": "m-brake",
+                "param": "mode=emergency"                
             })
         )
+
+# ==== 新增信号处理函数 ====
+def _handle_lift_control(mode: str) -> None:
+    """处理抱闸控制信号"""
+    logging.info(f"抱闸控制: {mode}")
+    if not command_thread:
+        return
+    
+    if mode == "rising":
+        asyncio.create_task(
+            command_thread.send_command("OperateBrake", {
+                "method": OperateRemoteDevice_1_0.Request.OPEN,
+                "name": "ieb_motor_lift",
+                "param": "mode=emergency"
+            })
+        )
+    elif mode == "falling":
+        asyncio.create_task(
+            command_thread.send_command("OperateBrake", {
+                "method": OperateRemoteDevice_1_0.Request.CLOSE,
+                "name": "ieb_motor_lift",
+                "param": "mode=emergency"
+            })
+        )
+
 def _handle_pid_params(params: dict) -> None:
     """处理PID参数设置信号"""
     logging.info(f"设置PID参数: {params}")
@@ -159,6 +186,8 @@ async def async_main() -> None:
     window.targetClearRequested.connect(_handle_target_clear)
     window.pidParamsRequested.connect(_handle_pid_params)  # 连接信号
     window.controlModeChanged.connect(_handle_control_mode)  # 新增控制模式信号连接
+    window.liftControlRequested.connect(_handle_lift_control)
+    
 
     # 初始化数据记录文件
     if not os.path.exists("./MotorAsst/output/odom.csv"):

@@ -25,7 +25,7 @@ nnvg --target-language c --outdir .cFolder --lookup-dir  ./public_regulated_data
 ‌步骤：‌
     ‌生成 .py 文件‌
     使用 `pyuic6` 工具将 .ui 文件转换为 Python 代码：
-    `pyuic6 your_ui_file.ui -o ui_mainwindow.py`
+    `pyuic6 main.ui -o uimain.py`
 
 ## 包路径导入
 - 新建setup.py

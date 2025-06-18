@@ -106,7 +106,7 @@
       <x>360</x>
       <y>20</y>
       <width>71</width>
-      <height>56</height>
+      <height>66</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -131,8 +131,8 @@
      <rect>
       <x>250</x>
       <y>20</y>
-      <width>101</width>
-      <height>86</height>
+      <width>102</width>
+      <height>89</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -165,7 +165,7 @@
       <x>250</x>
       <y>110</y>
       <width>111</width>
-      <height>91</height>
+      <height>101</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -392,8 +392,8 @@
      <rect>
       <x>440</x>
       <y>20</y>
-      <width>81</width>
-      <height>61</height>
+      <width>87</width>
+      <height>66</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -419,7 +419,7 @@
       <x>410</x>
       <y>230</y>
       <width>301</width>
-      <height>53</height>
+      <height>58</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -450,6 +450,54 @@
         <widget class="QLineEdit" name="lineEdit_3"/>
        </item>
       </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget_7">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>100</y>
+      <width>91</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_9">
+     <item>
+      <widget class="QPushButton" name="pushButton_4">
+       <property name="text">
+        <string>上升</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_5">
+       <property name="text">
+        <string>下降</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>300</y>
+      <width>144</width>
+      <height>56</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_10">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>顶升电机状态</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_4"/>
      </item>
     </layout>
    </widget>
