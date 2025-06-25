@@ -1,5 +1,5 @@
 # python
-uavcan/.*/
+uavcan/.myvenv/
 uavcan/**/*.csv
 uavcan/**/*.png
 uavcan/**/__pycache__/

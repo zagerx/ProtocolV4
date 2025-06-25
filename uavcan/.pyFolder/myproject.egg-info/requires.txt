@@ -1,0 +1,4 @@
+numpy>=1.20.0
+pycyphal>=1.20
+requests
+uavcan[dsdl]==1.0.0.dev35

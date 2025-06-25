@@ -19,7 +19,7 @@ nnvg --target-language c --outdir .cFolder --lookup-dir  ./public_regulated_data
 - 将designer添加到当前虚拟环境下的环境变量
     - 打开.myvenv/bin/active文件，在末尾添加`alias designer="$VIRTUAL_ENV/lib/python3.10/site-packages/qt6_applications/Qt/bin/designer"  `
     - 关闭虚拟环境重新打开后生效
-### python调用ui文件
+### python调用ui文
 使用生成的 .py 文件（推荐）‌
 将 .ui 文件转换为 Python 代码，再通过继承调用。
 ‌步骤：‌
@@ -68,11 +68,11 @@ from setuptools import setup, find_packages
 setup(
     name="motorasst",
     version="0.1.0",
-    packages=["MotorAsst", "MotorAsst.lib", "MotorAsst.ui"],  # 显式声明包结构
+    packages=["MotorAsst", "MotorAsst.ui","MotorAsst.drivers"],  # 显式声明包结构
     package_dir={
         "MotorAsst": "MotorAsst",  # 主包映射
-        "MotorAsst.lib": "MotorAsst/lib",
-        "MotorAsst.ui": "MotorAsst/ui"
+        "MotorAsst.ui": "MotorAsst/ui",
+        "MotorAsst.drivers": "MotorAsst/drivers"
     },
     install_requires=[
         "pycyphal>=1.20",

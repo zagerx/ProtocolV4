@@ -1,0 +1,320 @@
+// This is an AUTO-GENERATED Cyphal DSDL data type implementation. Curious? See https://opencyphal.org.
+// You shouldn't attempt to edit this file.
+//
+// Checking this file under version control is not recommended unless it is used as part of a high-SIL
+// safety-critical codebase. The typical usage scenario is to generate it as part of the build process.
+//
+// To avoid conflicts with definitions given in the source DSDL file, all entities created by the code generator
+// are named with an underscore at the end, like foo_bar_().
+//
+// Generator:     nunavut-2.3.1 (serialization was enabled)
+// Source file:   /home/zhangge/worknote/ProtocolV4/uavcan/custom_data_types/dinosaurs/component/tlv.1.0.uavcan
+// Generated at:  2025-06-26 11:12:32.470063 UTC
+// Is deprecated: no
+// Fixed port-ID: None
+// Full name:     dinosaurs.component.tlv
+// Version:       1.0
+//
+// Platform
+//     python_implementation:  CPython
+//     python_version:  3.10.12
+//     python_release_level:  final
+//     python_build:  ('main', 'May 27 2025 17:12:29')
+//     python_compiler:  GCC 11.4.0
+//     python_revision:
+//     python_xoptions:  {}
+//     runtime_platform:  Linux-6.8.0-60-generic-x86_64-with-glibc2.35
+//
+// Language Options
+//     target_endianness:  any
+//     omit_float_serialization_support:  False
+//     enable_serialization_asserts:  False
+//     enable_override_variable_array_capacity:  False
+//     cast_format:  (({type}) {value})
+
+#ifndef DINOSAURS_COMPONENT_TLV_1_0_INCLUDED_
+#define DINOSAURS_COMPONENT_TLV_1_0_INCLUDED_
+
+#include <nunavut/support/serialization.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_TARGET_ENDIANNESS == 1693710260,
+              "/home/zhangge/worknote/ProtocolV4/uavcan/custom_data_types/dinosaurs/component/tlv.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_OMIT_FLOAT_SERIALIZATION_SUPPORT == 0,
+              "/home/zhangge/worknote/ProtocolV4/uavcan/custom_data_types/dinosaurs/component/tlv.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_SERIALIZATION_ASSERTS == 0,
+              "/home/zhangge/worknote/ProtocolV4/uavcan/custom_data_types/dinosaurs/component/tlv.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_ENABLE_OVERRIDE_VARIABLE_ARRAY_CAPACITY == 0,
+              "/home/zhangge/worknote/ProtocolV4/uavcan/custom_data_types/dinosaurs/component/tlv.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+static_assert( NUNAVUT_SUPPORT_LANGUAGE_OPTION_CAST_FORMAT == 2368206204,
+              "/home/zhangge/worknote/ProtocolV4/uavcan/custom_data_types/dinosaurs/component/tlv.1.0.uavcan is trying to use a serialization library that was compiled with "
+              "different language options. This is dangerous and therefore not allowed." );
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/// This type does not have a fixed port-ID. See https://forum.opencyphal.org/t/choosing-message-and-service-ids/889
+#define dinosaurs_component_tlv_1_0_HAS_FIXED_PORT_ID_ false
+
+// +-------------------------------------------------------------------------------------------------------------------+
+// | dinosaurs.component.tlv.1.0
+// +-------------------------------------------------------------------------------------------------------------------+
+#define dinosaurs_component_tlv_1_0_FULL_NAME_             "dinosaurs.component.tlv"
+#define dinosaurs_component_tlv_1_0_FULL_NAME_AND_VERSION_ "dinosaurs.component.tlv.1.0"
+
+/// Extent is the minimum amount of memory required to hold any serialized representation of any compatible
+/// version of the data type; or, on other words, it is the the maximum possible size of received objects of this type.
+/// The size is specified in bytes (rather than bits) because by definition, extent is an integer number of bytes long.
+/// When allocating a deserialization (RX) buffer for this data type, it should be at least extent bytes large.
+/// When allocating a serialization (TX) buffer, it is safe to use the size of the largest serialized representation
+/// instead of the extent because it provides a tighter bound of the object size; it is safe because the concrete type
+/// is always known during serialization (unlike deserialization). If not sure, use extent everywhere.
+#define dinosaurs_component_tlv_1_0_EXTENT_BYTES_                    37UL
+#define dinosaurs_component_tlv_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_ 37UL
+static_assert(dinosaurs_component_tlv_1_0_EXTENT_BYTES_ >= dinosaurs_component_tlv_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_,
+              "Internal constraint violation");
+
+/// saturated uint8 vendor = 1
+#define dinosaurs_component_tlv_1_0_vendor (1U)
+
+/// saturated uint8 product = 2
+#define dinosaurs_component_tlv_1_0_product (2U)
+
+/// saturated uint8 software_version = 3
+#define dinosaurs_component_tlv_1_0_software_version (3U)
+
+/// saturated uint8 hardware_version = 4
+#define dinosaurs_component_tlv_1_0_hardware_version (4U)
+
+/// saturated uint8 bootloader_version = 5
+#define dinosaurs_component_tlv_1_0_bootloader_version (5U)
+
+/// saturated uint8 sn = 6
+#define dinosaurs_component_tlv_1_0_sn (6U)
+
+/// saturated uint8 id = 7
+#define dinosaurs_component_tlv_1_0_id (7U)
+
+/// saturated uint8 model = 8
+#define dinosaurs_component_tlv_1_0_model (8U)
+
+/// saturated uint8 manufacturing_date = 9
+#define dinosaurs_component_tlv_1_0_manufacturing_date (9U)
+
+/// Array metadata for: saturated uint8[<=32] value
+#define dinosaurs_component_tlv_1_0_value_ARRAY_CAPACITY_           32U
+#define dinosaurs_component_tlv_1_0_value_ARRAY_IS_VARIABLE_LENGTH_ true
+
+typedef struct
+{
+    /// saturated uint16 component_id
+    uint16_t component_id;
+
+    /// saturated uint8 param_id
+    uint8_t param_id;
+
+    /// saturated uint8[<=32] value
+    struct  /// Array address equivalence guarantee: &elements[0] == &value
+    {
+        uint8_t elements[dinosaurs_component_tlv_1_0_value_ARRAY_CAPACITY_];
+        size_t count;
+    } value;
+
+    /// saturated uint8 value_tag
+    uint8_t value_tag;
+} dinosaurs_component_tlv_1_0;
+
+/// Serialize an instance into the provided buffer.
+/// The lifetime of the resulting serialized representation is independent of the original instance.
+/// This method may be slow for large objects (e.g., images, point clouds, radar samples), so in a later revision
+/// we may define a zero-copy alternative that keeps references to the original object where possible.
+///
+/// @param obj      The object to serialize.
+///
+/// @param buffer   The destination buffer. There are no alignment requirements.
+///                 @see dinosaurs_component_tlv_1_0_SERIALIZATION_BUFFER_SIZE_BYTES_
+///
+/// @param inout_buffer_size_bytes  When calling, this is a pointer to the size of the buffer in bytes.
+///                                 Upon return this value will be updated with the size of the constructed serialized
+///                                 representation (in bytes); this value is then to be passed over to the transport
+///                                 layer. In case of error this value is undefined.
+///
+/// @returns Negative on error, zero on success.
+static inline int8_t dinosaurs_component_tlv_1_0_serialize_(
+    const dinosaurs_component_tlv_1_0* const obj, uint8_t* const buffer,  size_t* const inout_buffer_size_bytes)
+{
+    if ((obj == NULL) || (buffer == NULL) || (inout_buffer_size_bytes == NULL))
+    {
+        return -NUNAVUT_ERROR_INVALID_ARGUMENT;
+    }
+    const size_t capacity_bytes = *inout_buffer_size_bytes;
+    if ((8U * (size_t) capacity_bytes) < 296UL)
+    {
+        return -NUNAVUT_ERROR_SERIALIZATION_BUFFER_TOO_SMALL;
+    }
+    // Notice that fields that are not an integer number of bytes long may overrun the space allocated for them
+    // in the serialization buffer up to the next byte boundary. This is by design and is guaranteed to be safe.
+    size_t offset_bits = 0U;
+    {   // saturated uint16 component_id
+        // Saturation code not emitted -- native representation matches the serialized representation.
+        const int8_t _err0_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, obj->component_id, 16U);
+        if (_err0_ < 0)
+        {
+            return _err0_;
+        }
+        offset_bits += 16U;
+    }
+    {   // saturated uint8 param_id
+        // Saturation code not emitted -- native representation matches the serialized representation.
+        buffer[offset_bits / 8U] = (uint8_t)(obj->param_id);  // C std, 6.3.1.3 Signed and unsigned integers
+        offset_bits += 8U;
+    }
+    {   // saturated uint8[<=32] value
+        if (obj->value.count > 32)
+        {
+            return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
+        }
+        // Array length prefix: truncated uint8
+        buffer[offset_bits / 8U] = (uint8_t)(obj->value.count);  // C std, 6.3.1.3 Signed and unsigned integers
+        offset_bits += 8U;
+        for (size_t _index0_ = 0U; _index0_ < obj->value.count; ++_index0_)
+        {
+            // Saturation code not emitted -- native representation matches the serialized representation.
+            buffer[offset_bits / 8U] = (uint8_t)(obj->value.elements[_index0_]);  // C std, 6.3.1.3 Signed and unsigned integers
+            offset_bits += 8U;
+        }
+    }
+    {   // saturated uint8 value_tag
+        // Saturation code not emitted -- native representation matches the serialized representation.
+        buffer[offset_bits / 8U] = (uint8_t)(obj->value_tag);  // C std, 6.3.1.3 Signed and unsigned integers
+        offset_bits += 8U;
+    }
+    if (offset_bits % 8U != 0U)  // Pad to 8 bits. TODO: Eliminate redundant padding checks.
+    {
+        const uint8_t _pad0_ = (uint8_t)(8U - offset_bits % 8U);
+        const int8_t _err1_ = nunavutSetUxx(&buffer[0], capacity_bytes, offset_bits, 0U, _pad0_);  // Optimize?
+        if (_err1_ < 0)
+        {
+            return _err1_;
+        }
+        offset_bits += _pad0_;
+    }
+    // It is assumed that we know the exact type of the serialized entity, hence we expect the size to match.
+    *inout_buffer_size_bytes = (size_t) (offset_bits / 8U);
+    return NUNAVUT_SUCCESS;
+}
+
+/// Deserialize an instance from the provided buffer.
+/// The lifetime of the resulting object is independent of the original buffer.
+/// This method may be slow for large objects (e.g., images, point clouds, radar samples), so in a later revision
+/// we may define a zero-copy alternative that keeps references to the original buffer where possible.
+///
+/// @param obj      The object to update from the provided serialized representation.
+///
+/// @param buffer   The source buffer containing the serialized representation. There are no alignment requirements.
+///                 If the buffer is shorter or longer than expected, it will be implicitly zero-extended or truncated,
+///                 respectively; see Specification for "implicit zero extension" and "implicit truncation" rules.
+///
+/// @param inout_buffer_size_bytes  When calling, this is a pointer to the size of the supplied serialized
+///                                 representation, in bytes. Upon return this value will be updated with the
+///                                 size of the consumed fragment of the serialized representation (in bytes),
+///                                 which may be smaller due to the implicit truncation rule, but it is guaranteed
+///                                 to never exceed the original buffer size even if the implicit zero extension rule
+///                                 was activated. In case of error this value is undefined.
+///
+/// @returns Negative on error, zero on success.
+static inline int8_t dinosaurs_component_tlv_1_0_deserialize_(
+    dinosaurs_component_tlv_1_0* const out_obj, const uint8_t* buffer, size_t* const inout_buffer_size_bytes)
+{
+    if ((out_obj == NULL) || (inout_buffer_size_bytes == NULL) || ((buffer == NULL) && (0 != *inout_buffer_size_bytes)))
+    {
+        return -NUNAVUT_ERROR_INVALID_ARGUMENT;
+    }
+    if (buffer == NULL)
+    {
+        buffer = (const uint8_t*)"";
+    }
+    const size_t capacity_bytes = *inout_buffer_size_bytes;
+    const size_t capacity_bits = capacity_bytes * (size_t) 8U;
+    size_t offset_bits = 0U;
+    // saturated uint16 component_id
+    out_obj->component_id = nunavutGetU16(&buffer[0], capacity_bytes, offset_bits, 16);
+    offset_bits += 16U;
+    // saturated uint8 param_id
+    if ((offset_bits + 8U) <= capacity_bits)
+    {
+        out_obj->param_id = buffer[offset_bits / 8U] & 255U;
+    }
+    else
+    {
+        out_obj->param_id = 0U;
+    }
+    offset_bits += 8U;
+    // saturated uint8[<=32] value
+    // Array length prefix: truncated uint8
+    if ((offset_bits + 8U) <= capacity_bits)
+    {
+        out_obj->value.count = buffer[offset_bits / 8U] & 255U;
+    }
+    else
+    {
+        out_obj->value.count = 0U;
+    }
+    offset_bits += 8U;
+    if (out_obj->value.count > 32U)
+    {
+        return -NUNAVUT_ERROR_REPRESENTATION_BAD_ARRAY_LENGTH;
+    }
+    for (size_t _index1_ = 0U; _index1_ < out_obj->value.count; ++_index1_)
+    {
+        if ((offset_bits + 8U) <= capacity_bits)
+        {
+            out_obj->value.elements[_index1_] = buffer[offset_bits / 8U] & 255U;
+        }
+        else
+        {
+            out_obj->value.elements[_index1_] = 0U;
+        }
+        offset_bits += 8U;
+    }
+    // saturated uint8 value_tag
+    if ((offset_bits + 8U) <= capacity_bits)
+    {
+        out_obj->value_tag = buffer[offset_bits / 8U] & 255U;
+    }
+    else
+    {
+        out_obj->value_tag = 0U;
+    }
+    offset_bits += 8U;
+    offset_bits = (offset_bits + 7U) & ~(size_t) 7U;  // Align on 8 bits.
+    *inout_buffer_size_bytes = (size_t) (nunavutChooseMin(offset_bits, capacity_bits) / 8U);
+    return NUNAVUT_SUCCESS;
+}
+
+/// Initialize an instance to default values. Does nothing if @param out_obj is NULL.
+/// This function intentionally leaves inactive elements uninitialized; for example, members of a variable-length
+/// array beyond its length are left uninitialized; aliased union memory that is not used by the first union field
+/// is left uninitialized, etc. If full zero-initialization is desired, just use memset(&obj, 0, sizeof(obj)).
+static inline void dinosaurs_component_tlv_1_0_initialize_(dinosaurs_component_tlv_1_0* const out_obj)
+{
+    if (out_obj != NULL)
+    {
+        size_t size_bytes = 0;
+        const uint8_t buf = 0;
+        const int8_t err = dinosaurs_component_tlv_1_0_deserialize_(out_obj, &buf, &size_bytes);
+
+        (void) err;
+    }
+}
+
+#ifdef __cplusplus
+}
+#endif
+#endif // DINOSAURS_COMPONENT_TLV_1_0_INCLUDED_
