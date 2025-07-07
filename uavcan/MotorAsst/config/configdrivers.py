@@ -92,31 +92,31 @@ class DriverConfig:
             commands={
                 "MotorEnable": CommandConfig(
                     data_type=Enable_1_0,
-                    server_node_id=28,
+                    server_node_id=25,
                     port=113,
                     display_name="Motor Enable",
                 ),
                 "SetVelocity": CommandConfig(
                     data_type=SetTargetValue_2_0,
-                    server_node_id=28,
+                    server_node_id=25,
                     port=117,
                     display_name="Set Velocity"
                 ),
                 "OperateBrake": CommandConfig(
                     data_type=OperateRemoteDevice_1_0,
-                    server_node_id=28,
+                    server_node_id=25,
                     port=121,
                     display_name="Operate Brake"
                 ),
                 "SetPidParams": CommandConfig(
                     data_type=PidParameter_1_0,
-                    server_node_id=28,
+                    server_node_id=25,
                     port=125,
                     display_name="Set PID Parameters"
                 ),                
                 "SetMode": CommandConfig(
                     data_type=SetMode_2_0,
-                    server_node_id=28,
+                    server_node_id=25,
                     port=119,
                     display_name="Set Motor Mode"
                 ),                
