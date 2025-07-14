@@ -26,7 +26,7 @@ async def operate_remote_device():
     # 创建客户端
     client = node.make_client(
         OperateRemoteDevice_1_0,
-        server_node_id=28,
+        server_node_id=25,
         port_name=121
     )
 
@@ -34,8 +34,8 @@ async def operate_remote_device():
         # 构造请求
         request = OperateRemoteDevice_1_0.Request(
             method=OperateRemoteDevice_1_0.Request.OPEN,
-            name="m-brake",
-            param="mode=high_accuracy"
+            name="ieb_motor_lift",
+            param="0"#0:下降 1：代表上升
         )
 
         # 发送请求并等待响应

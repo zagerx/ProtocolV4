@@ -82,15 +82,15 @@ def _handle_lift_control(mode: str) -> None:
             command_thread.send_command("OperateBrake", {
                 "method": OperateRemoteDevice_1_0.Request.OPEN,
                 "name": "ieb_motor_lift",
-                "param": "mode=emergency"
+                "param": "1"
             })
         )
     elif mode == "falling":
         asyncio.create_task(
             command_thread.send_command("OperateBrake", {
-                "method": OperateRemoteDevice_1_0.Request.CLOSE,
+                "method": OperateRemoteDevice_1_0.Request.OPEN,
                 "name": "ieb_motor_lift",
-                "param": "mode=emergency"
+                "param": "0"
             })
         )
 

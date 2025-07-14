@@ -25,7 +25,7 @@ class CommandMonitor(BaseMonitor):
             )
             if result:
                 msg, transfer = result
-                if (transfer.source_node_id != 28):
+                if (transfer.source_node_id != 25):
                     return False, None
                 return (True, result)
             return False, None

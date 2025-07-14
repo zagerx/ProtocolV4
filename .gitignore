@@ -6,3 +6,5 @@ uavcan/**/__pycache__/
 uavcan/motorasst.egg-info
 uavcan/*.log
 # uavcan/*.csv
+build/
+dist/
