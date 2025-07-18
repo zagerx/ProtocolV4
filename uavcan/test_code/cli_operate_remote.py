@@ -35,7 +35,7 @@ async def operate_remote_device():
         request = OperateRemoteDevice_1_0.Request(
             method=OperateRemoteDevice_1_0.Request.OPEN,
             name="ieb_motor_lift",
-            param="0"#0:下降 1：代表上升
+            param="1"#0:下降 1：代表上升
         )
 
         # 发送请求并等待响应
