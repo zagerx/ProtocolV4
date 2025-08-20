@@ -14,7 +14,7 @@ from uavcan.node import Heartbeat_1_0, Version_1_0
 import asyncio
 
 # 目标节点ID列表
-TARGET_NODE_IDS = {16, 25}
+TARGET_NODE_IDS = {16, 25, 28}
 
 # 健康状态和运行模式的文本映射
 HEALTH_MAP = {
