@@ -4,3 +4,11 @@ config UAVCAN_ENABLE
     depends on CAN
     help
       Enable UAVCAN protocol support (requires CAN bus support)
+
+
+config CANOPEN_NODE_ID
+	int "CANopen node ID"
+	default 10
+	range 1 127
+	help
+	  7-bit CANopen Node ID
