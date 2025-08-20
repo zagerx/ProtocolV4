@@ -10,3 +10,4 @@ zephyr_include_directories(
     libcanard/libcanard/
 )
 
+add_subdirectory(can_drivers)

@@ -1,6 +1,5 @@
 # Copyright (c) 2021 Teslabs Engineering S.L.
 # SPDX-License-Identifier: Apache-2.0
 
-if(CONFIG_UAVCAN_ENABLE)
-    add_subdirectory(uavcan)
-endif()
+zephyr_library_sources(canard_if.c)
+

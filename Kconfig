@@ -1,0 +1,6 @@
+config UAVCAN_ENABLE
+    bool "Enable UAVCAN support"
+    default n
+    depends on CAN
+    help
+      Enable UAVCAN protocol support (requires CAN bus support)
