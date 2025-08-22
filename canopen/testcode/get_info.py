@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-CANopen 设备信息读取工具 (低级CAN消息版本)
-功能：尝试读取多个可能的设备名称索引
+CANopen 设备名称读取工具
+功能：支持分段读取长设备名称（索引0x1008）
 作者：CANopen 专家
 日期：2023-10-15
 """
@@ -11,7 +11,7 @@ import can
 import time
 import sys
 
-class CANopenDeviceInfoReader:
+class CANopenDeviceNameReader:
     def __init__(self, interface='can1', bitrate=1000000, node_id=10):
         self.interface = interface
         self.bitrate = bitrate
@@ -35,111 +35,164 @@ class CANopenDeviceInfoReader:
             print(f"❌ 连接CAN接口失败: {e}")
             return False
 
-    def send_sdo_read_request(self, index, subindex=0):
-        """
-        发送SDO读请求并等待响应
-        参数:
-            index: 对象字典索引
-            subindex: 对象字典子索引
-        返回:
-            读取到的数据值，如果失败返回None
-        """
-        # 将索引拆分为低字节和高字节
-        index_low = index & 0xFF
-        index_high = (index >> 8) & 0xFF
-        
-        # 构建SDO读请求报文
-        sdo_data = [
-            0x40,  # 命令字节: 读请求
-            index_low,
-            index_high,
-            subindex,
-            0, 0, 0, 0  # 填充字节
-        ]
-        
-        # 创建CAN消息
-        msg = can.Message(
-            arbitration_id=self.sdo_tx_cobid,
-            data=sdo_data,
-            is_extended_id=False
-        )
-        
-        # 发送消息
+    def send_sdo_request(self, data):
+        """发送SDO请求"""
         try:
+            msg = can.Message(
+                arbitration_id=self.sdo_tx_cobid,
+                data=data,
+                is_extended_id=False
+            )
             self.bus.send(msg)
-            print(f"📤 已发送SDO读请求: 索引=0x{index:04X}, 子索引={subindex}")
+            return True
         except can.CanError as e:
-            print(f"❌ 发送SDO读请求失败: {e}")
-            return None
-        
-        # 等待响应
+            print(f"❌ 发送SDO请求失败: {e}")
+            return False
+
+    def wait_for_sdo_response(self, timeout=1.0):
+        """
+        等待SDO响应
+        返回: (command_byte, full_data) 或 (None, None) 如果超时或错误
+        """
         start_time = time.time()
-        timeout = 1.0  # 1秒超时
-        
         while time.time() - start_time < timeout:
             try:
                 msg = self.bus.recv(timeout=0.1)
                 if msg and msg.arbitration_id == self.sdo_rx_cobid:
                     if len(msg.data) >= 8:
-                        command_byte = msg.data[0]
-                        if command_byte == 0x43:  # 成功的读响应
-                            # 提取数据 (4字节)
-                            data = int.from_bytes(msg.data[4:8], byteorder='little')
-                            return data
-                        elif command_byte & 0xE0 == 0x80:  # 错误响应
-                            error_code = int.from_bytes(msg.data[4:8], byteorder='little')
-                            print(f"❌ SDO读操作失败，错误代码: 0x{error_code:08X}")
-                            return None
+                        print(f"📥 收到SDO响应: {msg.data.hex(' ')}")
+                        return msg.data[0], msg.data  # 返回完整数据
             except can.CanError as e:
                 print(f"❌ 接收SDO响应时发生错误: {e}")
-                return None
-        
-        print("❌ 等待SDO响应超时")
-        return None
+                return None, None
+        return None, None
 
-    def read_string(self, index, subindex=0):
+    def read_string_segmented(self, index, subindex=0):
         """
-        读取字符串数据 (简化版本，假设字符串长度<=4字节)
+        分段读取字符串数据（支持超过4字节）
         参数:
             index: 对象字典索引
             subindex: 对象字典子索引
         返回:
             读取到的字符串，如果失败返回None
         """
-        data = self.send_sdo_read_request(index, subindex)
-        if data is not None:
-            try:
-                # 将整数转换为字节并解码为字符串
-                bytes_data = data.to_bytes(4, byteorder='little')
-                return bytes_data.decode('ascii').rstrip('\x00')
-            except:
-                return f"无法解码: 0x{data:08X}"
-        return None
-
-    def get_device_name(self):
-        """尝试读取多个可能的设备名称索引"""
-        print("\n" + "="*60)
-        print("尝试读取设备名称")
-        print("="*60)
+        # 发送初始化读取请求
+        index_low = index & 0xFF
+        index_high = (index >> 8) & 0xFF
         
-        # 尝试多个可能的设备名称索引
-        device_name_indices = [
-            0x1008,  # 标准设备名称索引
-            0x1000,  # 设备类型（虽然不是名称，但可以验证通信）
-            0x1009,  # 硬件版本（字符串）
-            0x100A,  # 软件版本（字符串）
+        init_data = [
+            0x40,  # 命令字节: 读请求
+            index_low,
+            index_high,
+            subindex,
+            0, 0, 0, 0
         ]
         
-        for index in device_name_indices:
-            print(f"尝试读取索引 0x{index:04X}...")
-            result = self.read_string(index)
-            if result and not result.startswith("无法解码"):
-                print(f"成功读取索引 0x{index:04X}: {result}")
-                return result
-            else:
-                print(f"索引 0x{index:04X} 读取失败")
+        if not self.send_sdo_request(init_data):
+            return None
         
-        return None
+        print(f"📤 已发送SDO读请求: 索引=0x{index:04X}, 子索引={subindex}")
+        
+        # 等待初始化响应
+        command_byte, full_data = self.wait_for_sdo_response()
+        if command_byte is None:
+            print("❌ 等待SDO响应超时")
+            return None
+        
+        print(f"响应命令字节: 0x{command_byte:02X}")
+        
+        if command_byte == 0x43:  # 单次响应，数据长度<=4字节
+            data_value = int.from_bytes(full_data[4:8], byteorder='little')
+            try:
+                bytes_data = data_value.to_bytes(4, byteorder='little')
+                return bytes_data.decode('ascii').rstrip('\x00')
+            except:
+                return f"无法解码: 0x{data_value:08X}"
+        
+        elif command_byte == 0x41:  # 初始化分段响应
+            # 解析数据长度
+            total_size = int.from_bytes(full_data[4:8], byteorder='little')
+            print(f"分段传输总大小: {total_size} 字节")
+            
+            # 开始分段传输
+            result_bytes = bytearray()
+            toggle = 0
+            
+            while len(result_bytes) < total_size:
+                # 发送段请求
+                segment_data = [
+                    0x60 | (toggle << 4),  # 段请求命令字节
+                    0, 0, 0, 0, 0, 0, 0
+                ]
+                
+                if not self.send_sdo_request(segment_data):
+                    return None
+                
+                print(f"📤 发送段请求, toggle={toggle}")
+                
+                # 等待段响应
+                seg_command_byte, seg_full_data = self.wait_for_sdo_response()
+                if seg_command_byte is None:
+                    print("❌ 等待段响应超时")
+                    return None
+                
+                print(f"段响应命令字节: 0x{seg_command_byte:02X}")
+                
+                if (seg_command_byte & 0xE0) == 0x00:  # 段响应
+                    # 检查toggle位
+                    seg_toggle = (seg_command_byte >> 4) & 0x01
+                    if seg_toggle != toggle:
+                        print(f"❌ toggle位不匹配: 期望{toggle}, 收到{seg_toggle}")
+                        return None
+                    
+                    # 计算本段数据长度
+                    seg_len = 7 - ((seg_command_byte >> 1) & 0x07)
+                    if seg_len < 0 or seg_len > 7:
+                        print(f"❌ 无效的段长度: {seg_len}")
+                        return None
+                    
+                    print(f"段数据长度: {seg_len} 字节")
+                    
+                    # 添加数据 (从索引1开始，跳过命令字节)
+                    result_bytes.extend(seg_full_data[1:1+seg_len])
+                    
+                    # 检查是否最后一段
+                    if (seg_command_byte & 0x01) == 0x01:  # 最后一段
+                        print("收到最后一段")
+                        break
+                    
+                    # 切换toggle
+                    toggle = 1 - toggle
+                else:
+                    print(f"❌ 意外的段响应: 0x{seg_command_byte:02X}")
+                    return None
+            
+            try:
+                return result_bytes.decode('ascii').rstrip('\x00')
+            except:
+                return f"无法解码分段数据: {result_bytes.hex()}"
+        
+        elif (command_byte & 0xE0) == 0x80:  # 错误响应
+            error_code = int.from_bytes(full_data[4:8], byteorder='little')
+            print(f"❌ SDO读操作失败，错误代码: 0x{error_code:08X}")
+            return None
+        else:
+            print(f"❌ 未知的响应命令字节: 0x{command_byte:02X}")
+            return None
+
+    def read_device_name(self):
+        """读取设备名称（索引0x1008），支持分段传输"""
+        print("\n" + "="*60)
+        print("设备名称读取")
+        print("="*60)
+        
+        device_name = self.read_string_segmented(0x1008)
+        if device_name:
+            print(f"设备名称 (0x1008): {device_name}")
+            return device_name
+        else:
+            print("❌ 设备名称读取失败")
+            return None
 
     def close(self):
         """关闭CAN连接"""
@@ -150,7 +203,7 @@ class CANopenDeviceInfoReader:
 def main():
     # 命令行参数解析
     parser = argparse.ArgumentParser(
-        description="CANopen设备名称读取工具",
+        description="CANopen设备名称读取工具（支持分段传输）",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('-i', '--interface', default='can1',
@@ -168,7 +221,7 @@ def main():
         sys.exit(1)
     
     # 打印配置信息
-    print("CANopen 设备名称读取工具")
+    print("CANopen 设备名称读取工具（支持分段传输）")
     print("="*50)
     print(f"接口: {args.interface}")
     print(f"波特率: {args.bitrate} bps")
@@ -176,7 +229,7 @@ def main():
     print("="*50)
     
     # 创建读取器
-    reader = CANopenDeviceInfoReader(
+    reader = CANopenDeviceNameReader(
         interface=args.interface,
         bitrate=args.bitrate,
         node_id=args.node
@@ -187,7 +240,7 @@ def main():
         sys.exit(1)
     
     # 获取设备名称
-    device_name = reader.get_device_name()
+    device_name = reader.read_device_name()
     
     # 关闭连接
     reader.close()
