@@ -84,7 +84,7 @@ int main(void)
 	}
 
 	LOG_INF("CANopen stack initialized with Node ID: %d", CONFIG_CANOPEN_NODE_ID);
-
+	canopen_program_download_attach(CO->NMT, CO->SDO[0], CO->em);
 	// 设置 CAN 模块为正常模式
 	CO_CANsetNormalMode(CO->CANmodule[0]);
 

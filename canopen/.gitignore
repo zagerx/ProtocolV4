@@ -1,3 +1,5 @@
 build/
 jlink.jlink
 makefile
+.cache/
+testcode/*.bin

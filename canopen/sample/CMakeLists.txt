@@ -16,6 +16,7 @@ project(canopen_app)
 
 target_sources(app PRIVATE
     src/main.c
+    src/canopen_program.c
     objdict/CO_OD.c
 )
 zephyr_include_directories(objdict)
